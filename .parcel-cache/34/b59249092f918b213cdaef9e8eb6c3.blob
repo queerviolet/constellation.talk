@@ -1,0 +1,31 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _binarysearch = _interopRequireDefault(require("binarysearch"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const compareCueToTime = ({
+  at
+}, time) => at - time;
+
+var _default = (cues = []) => {
+  cues.forEach((cue, i) => cue.index = i);
+
+  const lookup = needle => {
+    if (needle.currentTime) return lookup(needle.currentTime);
+    return cues[index(needle, compareCueToTime)];
+  };
+
+  const index = (needle, compare = compareCueToTime) => _binarysearch.default.closest(cues, needle, compare);
+
+  lookup.cues = cues;
+  lookup.index = index;
+  return lookup;
+};
+
+exports.default = _default;

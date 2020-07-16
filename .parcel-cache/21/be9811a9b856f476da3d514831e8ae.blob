@@ -1,0 +1,8 @@
+let hallucinationBuilds = [...hallucinations.getElementsByTagName('build-note')].filter(x => !x.skully);
+When(hallucinationsToSleep).start(() => titleWriter.text = '').frame(every(0.2[sec])((_, i) => {
+  const lastBuild = hallucinationBuilds[hallucinationBuilds.length - i - 2];
+  const nextBuild = hallucinationBuilds[hallucinationBuilds.length - i - 3];
+  if (!nextBuild) return;
+  document.body.classList.remove(lastBuild.id);
+  document.body.classList.add(nextBuild.id);
+})).end(() => hallucinationBuilds.forEach(b => document.body.classList.remove(b.id)));

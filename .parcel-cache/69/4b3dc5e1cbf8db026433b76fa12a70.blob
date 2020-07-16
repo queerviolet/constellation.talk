@@ -1,0 +1,21 @@
+insideEnterSkully.skully = {time: 0, paused: true}
+    insideLessCruft.skully = {time: 14.8, duration: 5, paused: true}
+    insideRetina.skully = {time: 20, duration: 20 - 14.8, paused: true}
+    insideRetinaGanglions.skully = {time: 29, duration: 29 - 20, paused: true}
+    insideRetinaEtc.skully = {time: 31, duration: 31 - 29, paused: true}
+    insideRetinaPhotoreceptors.skully = {time: 34, duration: 34 - 31, paused: true}
+    insideRetinaLightGoesIn.skully = {time: 34.5, duration: 34.5 - 34, paused: true}
+    insideRetinaSignalComesOut.skully = {time: 36.5, duration: 36.5 - 34.5, paused: true}
+    insideRetinaOpticNerve.skully = {time: 42, duration: 42 - 36.5, paused: true}
+    insideRetinaReceptiveField.skully = {time: 50.84, duration: 50.8 - 42, paused: true}
+    insideRetinaReceptiveFieldFiringWeakly.skully = {time: 50.96, duration: 0, paused: true}
+    insideRetinaReceptiveFieldOffCenterFiring.skully = {time: 51.5, duration: 3, paused: true}
+    insideRetinaReceptiveFieldOffCenterDead.skully = {time: 51.63, duration: 1, paused: true}
+    insideRetinaReceptiveFieldOnCenterFiring.skully = {time: 51.8, duration: 1, paused: true}
+    insideBrain.skully = {time: 65, duration: 3, paused: true}
+    insideChiasma.skully = {time: 65, duration: 3, paused: true}
+    insideThalamus.skully = {time: 65, duration: 3, paused: true}
+    insideVisualCortex.skully = {time: 86, duration: 5, paused: true}
+
+    When(buildInRange(insideEnterSkully, insideVisualCortex))
+      .changed(((_ts, build) => build.skully && skully.seekTo(build.skully)))

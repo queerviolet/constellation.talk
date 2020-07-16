@@ -1,0 +1,1 @@
+When(dreamsTrainingProblemsCounting).start(() => dreamsGlobalCountingTitle.text = 'Eight-eyed monkey (Goodfellow 2016)');

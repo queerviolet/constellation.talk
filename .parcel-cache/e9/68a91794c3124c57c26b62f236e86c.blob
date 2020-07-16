@@ -1,0 +1,58 @@
+When(buildInRange(title2DreamsBlur, dreamsInterpolation)).changed((_, {
+  dataset: {
+    time,
+    duration = 0,
+    paused,
+    playbackRate = 1
+  }
+}) => facesVideo.seekTo({
+  time,
+  duration,
+  playbackRate,
+  paused: typeof paused !== 'undefined'
+}));
+When(buildInRange(dreamsTraining, dreamsTrainingProblemsCounting)).frame(function () {
+  this.lastTime = this.lastTime || 0;
+  const now = floor(facesVideo.currentTime * 10);
+
+  if (this.lastTime !== now) {
+    gen_9.innerHTML = `<pre>${randomMatrix(5, 5)}</pre>`;
+    gen_9.style.opacity = 1;
+    this.lastTime = now;
+  }
+
+  if (facesVideo.currentTime > 78) facesVideo.currentTime = 47;
+}).end(() => gen_9.style.opacity = 0);
+When(buildInRange(dreamsTrainingExpand, dreamsTrainingProblemsCounting)).withDuration(20[sec]).start(async function () {
+  this.zRot = lerp(0, 360, _ => _ % 360);
+  this.xRot = lerp(0, 70);
+  this.zoom = lerp(1, 0.4);
+  this.expand = lerp(0, 1);
+  this.panDown = For(3[sec]).at(t => faces.style.setProperty('--stack-rotate-x', this.xRot(t) + 'deg'));
+  this.zoomOut = For(8[sec]).at(t => faces.style.setProperty('--stack-zoom', this.zoom(t)));
+  this.expandStack = For(6[sec]).at(t => faces.style.setProperty('--stack-expand', this.expand(t)));
+}).at(function (t) {
+  faces.style.setProperty('--stack-rotate-z', this.zRot(t % 1) + 'deg');
+}).end(function () {
+  this.panDown.remove();
+  this.zoomOut.remove();
+  const zReset = lerp(this.zRot(this.t % 1), 0, _ => _ + 'deg');
+  const xReset = lerp(this.xRot(this.panDown.t), 0, _ => _ + 'deg');
+  const zoomReset = lerp(this.zoom(this.zoomOut.t), 1);
+  For(1[sec]).at(t => {
+    faces.style.setProperty('--stack-rotate-x', xReset(t));
+    faces.style.setProperty('--stack-zoom', zoomReset(t));
+    faces.style.setProperty('--stack-rotate-z', zReset(t));
+  }).end(() => {
+    faces.style.setProperty('--stack-rotate-x', 0);
+    faces.style.setProperty('--stack-zoom', 1);
+    faces.style.setProperty('--stack-rotate-z', 0);
+  });
+});
+When(buildInRange(dreamsTrainingFeedback, dreamsTrainingProblemsCounting)).withDuration(3[sec]).start(function () {
+  this.expand = lerp(1, -1);
+}).at(function (t) {
+  if (t > 1) return;
+  faces.style.setProperty('--discrim-stack-expand', this.expand(t));
+}).end(() => faces.style.setProperty('--discrim-stack-expand', 1));
+When(dreamsInterpolation).frame(() => facesVideo.currentTime > 144 && (facesVideo.currentTime = dreamsInterpolation.dataset.time));

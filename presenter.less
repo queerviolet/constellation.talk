@@ -1,0 +1,74 @@
+@import "colors.less";
+
+body {
+  display: flex;
+  flex-flow: column nowrap;
+  font-family: Monaco;
+  margin: 0;
+  background:black;
+  color: white;
+
+  font-size: 16pt;
+  font-weight: bold;
+}
+
+button.timer {
+  position: fixed;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  top: 9px; right: 9px;
+  padding: 8px;
+  font-size: 18px;
+  z-index: 100;
+  outline: none;
+  font-family: Monaco;
+
+  &:active {
+    border: thin solid @blue-lightest;
+  }
+
+  &.running {
+    border: thin solid fuchsia;
+    color: fuchsia;
+  }
+}
+
+build-note {
+  display: block;
+  position: relative;
+  margin: 0;
+  padding: 16px;
+  border-bottom: thin solid darkgray;
+
+  &.current {
+    > .title,
+    > .timer {
+      color: white;
+
+    }
+    color: white;
+    font-weight: bold;
+    border-color: fuchsia;
+    background: rgba(255, 20, 145, 0.495);
+  }
+
+  > .title {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 6px;
+    color: @blue-lightest;
+    display: inline-block;
+    border-radius: 6px;
+  }
+
+  > .timer {
+    position: absolute;
+    top: 9px; right: 9px;
+    color: black;
+  }
+
+  > .note {
+    white-space: pre-line;
+  }
+}

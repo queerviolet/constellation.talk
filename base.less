@@ -1,0 +1,112 @@
+@import "colors.less";
+
+html {
+  --typewriter-cursor-color: @blue-lightest;
+  --typewriter-cursor-blink-rate: 1.2s;
+  overflow: hidden;
+  height: 100%;
+}
+
+body {
+  background: black;
+  font-family: Monaco;
+  font-size: 26px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  height: 100%;
+}
+
+:global(.vbox) {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+h1 {
+  color: @blue-lightest;
+}
+
+.fixed(@top: 0, @left: 0, @right: auto, @width: 100vw, @height: 100vh, @bottom: auto) {
+  position: fixed;
+  width: @width;
+  height: @height;
+  top: @top;
+  left: @left;
+  bottom: @bottom;
+  right: @right;
+}
+
+.absolute(@top: 0, @left: 0, @width: 100vw, @height: 100vh) {
+  position: absolute;
+  width: @width;
+  height: @height;
+  top: @top;
+  left: @left;
+}
+
+.absoluteCenter {
+  .absolute(@top: 50%, @left: 50%, @width: auto, @height: auto);
+  transform: translate3d(-50%, -50%, 0);
+}
+
+@keyframes trippy {
+  0% { filter: hue-rotate(0); }
+  50% { filter: hue-rotate(180deg); }
+  100% { filter: hue-rotate(0); }
+}
+
+.trippy {
+  animation-name: trippy;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+
+#bootloader {
+  .fixed();
+  background: black;
+  color: white;
+  overflow: scroll;
+
+  > type-writer {
+    display: block;
+    --typewriter-typing-rate: 100;
+    --typewriter-cursor-color: rgba(0, 0, 0, 0);
+  }
+
+  > type-writer.terminal {
+    white-space: pre;
+    --typewriter-typing-rate: 100;  
+  }
+}
+
+build-note {
+  display: none;
+}
+
+.type-writer-title(@bg: @blue-lightest, @fg: black) {
+  display: inline-block;
+  transition: 1s;
+  background: @bg;
+  color: @fg;
+  --typewriter-cursor-color: @fg;
+  padding: 0 9px;
+}
+
+.window(@color: @blue-lightest) {
+  .fixed(@top: 50%, @left: 50%, @width: auto, @height: auto);
+  transform: translate(-50%, -50%) scale(0);
+  transition: 1s;
+  box-sizing: border-box;
+  > type-writer { .type-writer-title(@color); }
+  > video, > img {
+    .window-content(@color);
+  }
+}
+
+.window-content(@color: @blue-lightest) {
+  border: 3px solid @color;
+  box-shadow: 10px 10px 40px rgba(0, 0, 0, 0.4);
+}

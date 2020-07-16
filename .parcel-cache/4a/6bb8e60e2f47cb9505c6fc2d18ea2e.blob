@@ -1,0 +1,2 @@
+const discrim = createLayers({prefix: 'discrim', className: 'discrim-layer', count: 10})
+      const gen = createLayers({prefix: 'gen', className: 'gen-layer', count: 10})

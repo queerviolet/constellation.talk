@@ -1,0 +1,6 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="57d6c77645e9928d194d0dcd80a6d55c">
+
+<button id="__timer" class="timer"><span id="__timer_display"></span> ⏱</button>
+<script src="58fbc46a2e4e7d2ec6609b4d7e3ebf6c"></script>

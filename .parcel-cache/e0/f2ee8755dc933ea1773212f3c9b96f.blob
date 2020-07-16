@@ -1,0 +1,2 @@
+When(insideVisualCortexLayers)  
+      .start(() => visualCortexLayersTitle.text = 'Human Visual Cortex (Grill-Spector 2004)')

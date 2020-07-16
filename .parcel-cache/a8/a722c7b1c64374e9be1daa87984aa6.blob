@@ -1,0 +1,24 @@
+When(dreamFullscreenPaused).start(() => {
+  deepDream.currentTime = 0;
+  deepDream.pause();
+});
+When(buildInRange(dreamFullscreenMiquel, dreamFullscreenFleshZones)).start(() => {
+  deepDream.play();
+}).frame((_, current, prev) => {
+  if (!deepDream.timeline) return;
+  deepDreamCurrentLayer.text = deepDream.timeline(deepDream).layer;
+
+  if (current !== prev && current.dataset.time) {
+    deepDream.seekTo({
+      time: +current.dataset.time,
+      duration: 2,
+      playbackRate: 1
+    });
+  }
+});
+inceptionPixelsViz(buildInRange(inception, inceptionPanDiagram), deepDream, deepDreamInputPixels);
+When(inceptionConvTraining).frame(every(2[sec])(() => deepDreamConvFilter.text = randomMatrix(3, 3)));
+
+const randomRow = w => () => new Array(w).fill(0).map(() => random().toString().substr(0, 3) + ' ').join('') + '\n';
+
+const randomMatrix = (w, h) => '[\n' + new Array(h).fill(0).map(randomRow(w)).join('') + ']';

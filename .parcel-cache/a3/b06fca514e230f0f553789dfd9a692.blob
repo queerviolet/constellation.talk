@@ -1,0 +1,21 @@
+addEventListener('click', () => oscillo.setup())
+    addEventListener('keydown', () => oscillo.setup())
+
+    When(any(stonesLifeGoesOn, buildInRange(stonesLifeGoesOnAgain, stonesInTheCerebellum)))
+      .frame(every(0.1[sec])(() => bodyModel.update()))
+
+    When(stonesLaughter)
+      .start(() => {
+        laugh1.currentTime = 0
+        laugh2.currentTime = 0
+        laugh1.play()
+        laugh2.play()
+      })
+
+    When(stonesSobbing)
+      .start(() => {
+        sob.volume = 1
+        sob.currentTime = 0
+        sob.play()
+      })
+      .end(() => sob.pause())

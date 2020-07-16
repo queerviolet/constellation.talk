@@ -1,0 +1,1 @@
+When(insideAdversarialSticker).start(() => stickerVideo.play());

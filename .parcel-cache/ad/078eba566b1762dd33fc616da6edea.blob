@@ -1,0 +1,3 @@
+When(dreamsTrainingProblemsStructure).start(() =>
+      dreamsGlobalStructureTitle.text = 'Fallout Cow (Goodfellow 2016)'
+    )

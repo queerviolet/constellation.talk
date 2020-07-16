@@ -1,0 +1,3 @@
+When(insideVisualCortexRecurrent)  
+      .start(() =>
+        visualCortexMapTitle.text = 'Visual heirarchy (Felleman 1991)')
