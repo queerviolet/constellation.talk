@@ -86,9 +86,8 @@ export const For = (duration, ctx=defaultContext) => {
   return anim
 }
 
-let lastTick = 0;
 export const every = interval => {
-  lastTick = null
+  let lastTick = null
   return cb => function (ts, currentBuild, lastBuild) {
     const currentTick = Math.floor((ts - this.startedAt) / interval)
     if (currentTick !== lastTick)

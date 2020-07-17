@@ -1,0 +1,91 @@
+@import "charter-webfont/charter.css";
+@import "colors.less";
+
+#letterbox-clip-svg {
+  pointer-events: none;
+  position: fixed;
+  z-index: -10000;
+  top: 0; left: 0; bottom: 0; right: 0;  
+}
+
+#bug {
+  position: fixed;
+  pointer-events: none;
+  top: 0; left: 0;  
+  color: fuchsia;
+  background: linear-gradient(90deg, @midnight-darkest 40%, black, @midnight-darkest 60%);
+  border: thin solid @pink-base;
+  border-left: 10% solid @pink-base;
+  padding: 4px;
+  font-family: Charter, serif;
+  font-size: 36px;
+  z-index: 100;
+  opacity: 0.8;
+  width: 100vw;
+  height: 36px;
+  box-shadow: 0px 0px px rgba(0, 0, 0, 0.2);
+  transform-origin: center center;
+  transform:
+    translate(
+      calc(
+        var(--letterbox-width) +
+        var(--letterbox-left) +
+        -50% +
+        -72px
+      ),
+      calc(
+        var(--letterbox-height) +
+        var(--letterbox-top) +
+        -50% +
+        -72px
+      )
+    )
+    rotate(-45deg);
+
+  > * {
+    .absoluteCenter();
+    color: @pink-base;
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity 3s;
+    text-align: center;
+
+    &.visible { opacity: 1; }
+  }
+}
+
+.absolute(@top: 0, @left: 0, @width: 100vw, @height: 100vh) {
+  position: absolute;
+  width: @width;
+  height: @height;
+  top: @top;
+  left: @left;
+}
+
+.absoluteCenter(@top: 50%, @left: 50%) {
+  .absolute(@top, @left, @width: auto, @height: auto);
+  transform: translate3d(-50%, -50%, 0);
+}
+
+.letterbox-bar(@color: black) {
+  background: black;
+  position: fixed;
+  z-index: 2000;
+  box-sizing: border-box;
+}
+
+#letterbox-bar-1 {
+  .letterbox-bar();
+  top: var(--letterbox-bars-0-top);
+  left: var(--letterbox-bars-0-left);
+  width: var(--letterbox-bars-0-width);
+  height: var(--letterbox-bars-0-height);
+}
+
+#letterbox-bar-2 {
+  .letterbox-bar();
+  top: var(--letterbox-bars-1-top);
+  left: var(--letterbox-bars-1-left);
+  width: var(--letterbox-bars-1-width);
+  height: var(--letterbox-bars-1-height);
+}

@@ -8,7 +8,7 @@ html {
 }
 
 body {
-  background: black;
+  background: @midnight-darkest;
   font-family: Monaco;
   font-size: 26px;
   padding: 0;
@@ -29,7 +29,12 @@ h1 {
   color: @blue-lightest;
 }
 
-.fixed(@top: 0, @left: 0, @right: auto, @width: 100vw, @height: 100vh, @bottom: auto) {
+.fixed(@top: var(--letterbox-top),
+@left: var(--letterbox-left),
+@right: var(--letterbox-right),
+@width: var(--letterbox-width),
+@height: var(--letterbox-height),
+@bottom: var(--letterbox-bottom)) {
   position: fixed;
   width: @width;
   height: @height;
@@ -109,4 +114,8 @@ build-note {
 .window-content(@color: @blue-lightest) {
   border: 3px solid @color;
   box-shadow: 10px 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+#graph {
+  .fixed();
 }

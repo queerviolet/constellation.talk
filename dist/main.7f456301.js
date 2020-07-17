@@ -1063,10 +1063,9 @@ const For = (duration, ctx = defaultContext) => {
 };
 
 exports.For = For;
-let lastTick = 0;
 
 const every = interval => {
-  lastTick = null;
+  let lastTick = null;
   return cb => function (ts, currentBuild, lastBuild) {
     const currentTick = Math.floor((ts - this.startedAt) / interval);
     if (currentTick !== lastTick) cb.apply(this, [ts, currentTick, currentBuild, lastBuild]);

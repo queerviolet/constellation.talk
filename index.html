@@ -4,11 +4,63 @@
 <title>Learning from Machines</title>
 <link rel=stylesheet href=base.less>
 
+<div id=graph></div>
+<script src=stage.ts></script>
 <script src=main.js></script>
-<script>
-  const {floor, random} = Math
-</script>
-<build-note id=x>hi</build-note>
-<build-note id=y>there</build-note>
 
-<a href=presenter.html></a>
+<build-note id=x>hi</build-note>
+<build-note id=yes>there</build-note>
+<build-note id=zed>there</build-note>
+
+<script>
+  const distance = 1400;
+
+  const SLOW = 1 / 5e3;
+  function spin(speed = SLOW) {
+    return t => {
+      console.log('frame')
+      const angle = t * speed;
+      Graph.cameraPosition({
+        x: distance * Math.sin(angle),
+        z: distance * Math.cos(angle)
+      }, 0);
+    }    
+  }
+  
+  Graph.onNodeClick(console.log)
+
+  When(yes)  
+    .start(() => {
+      let mis = JSON.parse(JSON.stringify(miserables))
+      Graph
+        .graphData(mis)
+        // .forceEngine('ngraph')   
+        .enableNodeDrag(false)
+        .enableNavigationControls(true)
+        .showNavInfo(false)
+        .cameraPosition({ x: 0, z: distance })
+        //.graphData(gData);        
+    })
+    .frame(spin())
+  
+  When(zed)
+    .start(() => {
+      Graph.graphData(JSON.parse(JSON.stringify(blocks)))
+    })
+    .frame(spin())
+</script>
+
+
+<!-- Letterbox & Bug -->
+<link rel=stylesheet href=bug.less>
+<div id=bug>
+  <a href=https://twitter.com/rakshesha>@rakshesha</a>
+  <a class=visible href=https://ashi.io>ashi.io</a>
+</div>
+<script src=bug.js></script>
+<!-- End Letterbox & Bug -->
+
+<a style='display: none;' href=presenter.html></a>
+<div id=letterbox-bar-1></div>
+<div id=letterbox-bar-2></div>
+
