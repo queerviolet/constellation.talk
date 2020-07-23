@@ -1,3 +1,0 @@
-When(buildInRange(inside5ht2a, insideAdversarialContinuousRefinement)).end(() => ht2aTitle.text = ht2aLSDTitle.text = stickerTitle.text = skiiersTitle.text = '');
-When(insideAdversarialSticker).start(() => stickerTitle.text = 'Adversarial patch arXiv:1712.09665v2');
-When(insideAdversarialSkiiers).start(() => skiiersTitle.text = 'Black-box adversarial example arXiv:1712.07113v2');

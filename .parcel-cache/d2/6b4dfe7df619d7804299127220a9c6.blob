@@ -1,1 +1,0 @@
-When(stonesTransformCopy).start(() => efferenceCopy.text = 'fingers will move');

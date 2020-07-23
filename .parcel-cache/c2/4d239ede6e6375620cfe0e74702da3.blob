@@ -1,4 +1,0 @@
-const {
-  floor,
-  random
-} = Math;

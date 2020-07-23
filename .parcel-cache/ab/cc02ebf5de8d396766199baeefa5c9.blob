@@ -1,5 +1,0 @@
-setInterval(() => {
-  const [current = bug.firstElementChild] = bug.getElementsByClassName('visible');
-  current.classList.remove('visible');
-  (current.nextElementSibling || bug.firstElementChild).classList.add('visible');
-}, 30 * 1000);

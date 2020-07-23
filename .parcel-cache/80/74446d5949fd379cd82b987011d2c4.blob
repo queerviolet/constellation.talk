@@ -1,6 +1,0 @@
-grid.playbackRate = 0;
-When(dreamsGrid).start(() => {
-  grid.onResize();
-  grid.playbackRate = 1;
-});
-When(buildInRange(dreamsGridFaster, dreamsGridZoom)).start(() => For(2[sec]).at(t => grid.playbackRate = 100 * t)).end(() => grid.playbackRate = 0);

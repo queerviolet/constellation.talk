@@ -83,5 +83,12 @@ build-note {
   bottom: var(--letterbox-bottom);
   right: var(--letterbox-right);
 }
+.introLaunchSchema #launchSchemaSource,
+.introLaunchGraph #launchSchemaSource {
+  display: none;
+}
+.introOnlyGraph #launchSchemaSource {
+  display: none;
+}
 
-/*# sourceMappingURL=base.3a141669.css.map */
+/*# sourceMappingURL=intro.0906d120.css.map */

@@ -5,6 +5,12 @@ global.Timeline = Timeline
 
 // global.Builds = Builds
 
+import hljs from 'highlight.js'
+import hljsGraphQl from 'highlightjs-graphql'
+import 'highlight.js/styles/atelier-cave-dark.css'
+hljsGraphQl(hljs)
+hljs.initHighlightingOnLoad()
+
 import {When, For, buildInRange, runAnimatorStep, always, match, lerp, every, sec, any} from './when'
 Object.assign(global, {When, For, buildInRange, always, every, sec, lerp, any})
 
@@ -233,9 +239,9 @@ function updateBuildFromLocalStorage() {
 addEventListener('storage', updateBuildFromLocalStorage)
 addEventListener('DOMContentLoaded', main)
 addEventListener('keydown', onKey)
-addEventListener('mousedown', () => currentBuild &&
-currentBuild.nextBuild &&
-setCurrentBuild(currentBuild.nextBuild))
+// addEventListener('mousedown', () => currentBuild &&
+// currentBuild.nextBuild &&
+// setCurrentBuild(currentBuild.nextBuild))
 addEventListener('touchstart', () => currentBuild &&
 currentBuild.nextBuild &&
 setCurrentBuild(currentBuild.nextBuild))

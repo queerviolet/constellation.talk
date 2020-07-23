@@ -1,4 +1,0 @@
-When(stonesApplyCopy).start(() => For(4[sec]).frame(every(0.1[sec])(() => {
-  r_finger_pos.update();
-  l_armpit_touch_pts.update();
-})));

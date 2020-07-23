@@ -1,12 +1,15 @@
+type Ratio = [number, number]
 type Size = {width: number, height: number}
 type Position = {top: number, left: number}
 type Frame = Position & {bottom: number, right: number}
 export type Box = Frame & Size
-export type Letterbox = Box & { bars: Box[] }
+export type Letterbox = Box & { bars: Box[], su: number }
 
 export default letterbox
 
-function letterbox(aspect: number, container: Size): Letterbox {
+function letterbox(ratio: Ratio, container: Size): Letterbox {
+  const [w, h] = ratio
+  const aspect = w / h
   const containerAspect = container.width / container.height
   if (containerAspect > aspect) {
     // Container is flatter than content, lock to container
@@ -15,7 +18,7 @@ function letterbox(aspect: number, container: Size): Letterbox {
     const left = (container.width - width) / 2
     const height = container.height
     const top = 0
-    return letterboxFrom(container, {
+    return letterboxFrom(ratio, container, {
       top,
       left,
       width,
@@ -28,12 +31,13 @@ function letterbox(aspect: number, container: Size): Letterbox {
   const top = (container.height - height) / 2
   const width = container.width
   const left = 0
-  return letterboxFrom(container, {top, left, width, height})
+  return letterboxFrom(ratio, container, {top, left, width, height})
 }
 
-const letterboxFrom = (container: Size, box: Size & Position): Letterbox => ({
+const letterboxFrom = (ratio: Ratio, container: Size, box: Size & Position): Letterbox => ({
   ...boxFrom(container, box),
   bars: subtract(container, box),
+  su: box.width / ratio[0],
 })
 
 const boxFrom = (container: Size, box: Size & Position): Box => ({
@@ -78,7 +82,7 @@ const subtract = (container: Size, box: Size & Position): Box[] => {
 
 const px = (px: number) => `${px}px`
 const None = () => {}
-export function applyLetterbox(aspect=16 / 9, onReshape: (box: Box) => void = None) {
+export function applyLetterbox(aspect: Ratio = [16, 9], onReshape: (box: Box) => void = None) {
   function onResize() {
     const box =
       letterbox(aspect, {width: innerWidth, height: innerHeight})
@@ -96,7 +100,7 @@ const setCSSPropertiesFrom = (src: any, prefix='--letterbox-', element=document.
       ? setCSSPropertiesFrom(src[k], prefix + k + '-', element)
       :
     typeof src[k] === 'number'
-      ? element.style.setProperty(prefix + k, px(src[k]))
+      ? element.style.setProperty(k !== 'su' ? prefix + k : `--${k}`, px(src[k]))
       :
     element.style.setProperty(prefix + k, src[k])
   )

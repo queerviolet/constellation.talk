@@ -16,6 +16,12 @@
   },
   "dependencies": {
     "3d-force-graph": "^1.66.4",
-    "binarysearch": "^1.0.0"
+    "aframe": "^1.0.4",
+    "aframe-forcegraph-component": "^2.27.1",
+    "binarysearch": "^1.0.0",
+    "graphql": "^15.3.0",
+    "highlight.js": "^10.1.1",
+    "highlightjs-graphql": "^1.0.1",
+    "three-spritetext": "^1.5.1"
   }
 }

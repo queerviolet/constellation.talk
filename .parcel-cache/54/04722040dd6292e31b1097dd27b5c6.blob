@@ -1,4 +1,0 @@
-When(stonesEfferenceMove).start(() => {
-  efferenceCopy.removeAttribute('style');
-  efferenceCopy.text = 'fingers: move';
-});

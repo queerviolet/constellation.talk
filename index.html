@@ -3,51 +3,128 @@
 
 <title>Learning from Machines</title>
 <link rel=stylesheet href=base.less>
+<link rel=stylesheet href=intro.less>
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@600;700&display=swap" rel="stylesheet">
+<!-- <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script> -->
+<script src=aframe.ts></script>
 
 <div id=graph></div>
+
 <script src=stage.ts></script>
 <script src=main.js></script>
 
-<build-note id=x>hi</build-note>
-<build-note id=yes>there</build-note>
-<build-note id=zed>there</build-note>
+<style>
+  .hljs { background: none; }
+</style>
+<script src=graphql.ts></script>
 
-<script>
-  const distance = 1400;
+<build-note id=title>hi</build-note>
 
-  const SLOW = 1 / 5e3;
-  function spin(speed = SLOW) {
-    return t => {
-      console.log('frame')
-      const angle = t * speed;
-      Graph.cameraPosition({
-        x: distance * Math.sin(angle),
-        z: distance * Math.cos(angle)
-      }, 0);
-    }    
+<build-note id=introLaunchSchema>
+  
+</build-note>
+<pre id=launchSchemaSource>
+<code id=launchSchema class=graphql>
+  type Query {
+    launches: [Launch!]!
+    astronaut(byName: String!): Astronaut
+    missions: [Mission!]!
+    ships(byStatus: ShipStatus): [Ship!]!
+  }
+
+  type Launch {
+    id: ID!
+    site: String
+    mission: Mission
+    ship: Ship
+    astronauts: [Astronaut]!
   }
   
-  Graph.onNodeClick(console.log)
+  type Ship {
+    id: ID!
+    name: String
+    type: String
+    status: ShipStatus
+  }
 
-  When(yes)  
-    .start(() => {
-      let mis = JSON.parse(JSON.stringify(miserables))
-      Graph
-        .graphData(mis)
-        // .forceEngine('ngraph')   
-        .enableNodeDrag(false)
-        .enableNavigationControls(true)
-        .showNavInfo(false)
-        .cameraPosition({ x: 0, z: distance })
-        //.graphData(gData);        
-    })
-    .frame(spin())
+  enum ShipStatus { ACTIVE, CONSTRUCTION, MAINTENANCE, RETIRED }
   
-  When(zed)
-    .start(() => {
-      Graph.graphData(JSON.parse(JSON.stringify(blocks)))
+  type Astronaut {
+    id: ID!
+    name: String!    
+    trips: [Launch]!
+  }
+  
+  type Mission {
+    name: String
+    missionPatch(size: PatchSize): String
+    viableShips: [Ship!]!
+  }
+  
+  enum PatchSize {
+    SMALL
+    LARGE
+  }
+</code>
+</pre>
+
+<build-note id=introLaunchGraph>here's the graph of it</build-note>
+<build-note id=introOnlyGraph></build-note>
+
+<script> 
+  const EMPTY = {nodes: [], links: []}
+
+  function relink(graphData) {
+    for (const l of graphData.links) {
+      l.source = typeof l.source === 'string' ? l.source : l.source.id
+      l.target = typeof l.target === 'string' ? l.target : l.target.id
+    }
+    for (const n of graphData.nodes) {
+      if (n.__threeObj) {
+        Object.assign(n, n.__threeObj.position)
+      }
+    }
+    return graphData
+  }
+
+  function squish(graphData, to=0.1) {
+    for (const n of graphData.nodes) {
+      if (n.__threeObj) {
+        Object.assign(n.__threeObj.position, n.__threeObj.position.multiplyScalar(0.1).add(new THREE.Vector3(Math.random(), Math.random(), Math.random()).multiplyScalar(5)))
+      }
+    }
+    return graphData
+  }
+
+  let data = null
+  function setData(graphData) {    
+    if (data !== graphData) Graph.graphData(graphData)
+    data = graphData    
+    return Graph
+  }
+
+  parsed = parseToGraph(launchSchema.textContent)
+  When(title).start(() => setData(EMPTY))
+  When(introLaunchSchema).start(() => setData(EMPTY))
+  
+  let query
+  When(introLaunchGraph)
+    .start(() => {      
+      let data = relink(parsed)
+      query = data.nodes.find(n => n.name === 'Query')
+      setData(data)
+        .forceEngine('d3')
+        .numDimensions(2)
+        .cameraPosition({ x: 0, y: 100, z: 350 }, query, 400)
     })
-    .frame(spin())
+    .frame(spin(100, query))
+
+  When(introOnlyGraph)
+    .start(() => {
+      Graph.forceEngine('none')
+        .enableNodeDrag(true)
+    })
 </script>
 
 
