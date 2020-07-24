@@ -5,7 +5,7 @@ html {
   height: 100%;
 }
 body {
-  background: #060f2f;
+  background: #030818;
   font-family: Monaco;
   font-size: 26px;
   padding: 0;
@@ -25,6 +25,10 @@ code {
 }
 h1 {
   color: #f0f7ff;
+}
+.fades {
+  transition: opacity 1000ms;
+  opacity: 0;
 }
 .absoluteCenter {
   position: absolute;
@@ -82,13 +86,122 @@ build-note {
   left: var(--letterbox-left);
   bottom: var(--letterbox-bottom);
   right: var(--letterbox-right);
+  transition: opacity 1000ms;
+  opacity: 0;
 }
-.introLaunchSchema #launchSchemaSource,
-.introLaunchGraph #launchSchemaSource {
-  display: none;
+#spaceySchema,
+#spaceyQuery,
+#spaceManualQuery,
+#earthseedQuery {
+  position: fixed;
+  width: calc(var(--letterbox-width) - 8 * var(--su));
+  height: calc(var(--letterbox-height) - 9 * var(--su));
+  top: calc(var(--letterbox-top) + 0 * var(--su));
+  left: calc(var(--letterbox-left) + 0 * var(--su));
+  bottom: auto;
+  right: auto;
+  transition: opacity 1000ms;
+  opacity: 0;
 }
-.introOnlyGraph #launchSchemaSource {
-  display: none;
+#bookishSchema,
+#bookishManualQuery,
+#bookishFedSchema {
+  position: fixed;
+  width: calc(var(--letterbox-width) - 6 * var(--su));
+  height: calc(var(--letterbox-height) - 9 * var(--su));
+  top: calc(var(--letterbox-top) + 0 * var(--su));
+  left: calc(var(--letterbox-left) + 10 * var(--su));
+  bottom: auto;
+  right: auto;
+  transition: opacity 1000ms;
+  opacity: 0;
+}
+.introSpaceySchema #spaceySchema {
+  opacity: 1;
+}
+.introSpaceyGraph #spaceySchema,
+.introSpaceyGraphOrbit #spaceySchema {
+  opacity: 1;
+}
+.introSpaceyGraph #graph,
+.introSpaceyGraphOrbit #graph {
+  opacity: 1;
+}
+.introSpaceyQuery #spaceyQuery,
+.introSpaceyRunQuery #spaceyQuery {
+  opacity: 1;
+}
+.introSpaceyQuery #graph,
+.introSpaceyRunQuery #graph {
+  opacity: 1;
+}
+.introBookishSchema #bookishSchema {
+  opacity: 1;
+}
+.introBookishGraph #bookishSchema,
+.introBookishGraphOrbit #bookishSchema {
+  opacity: 1;
+}
+.introBookishGraph #graph,
+.introBookishGraphOrbit #graph {
+  opacity: 1;
+}
+.introBothGraph #spaceySchema,
+.introBothGraphOrbit #spaceySchema {
+  opacity: 1;
+}
+.introBothGraph #bookishSchema,
+.introBothGraphOrbit #bookishSchema {
+  opacity: 1;
+}
+.introBothGraph #graph,
+.introBothGraphOrbit #graph {
+  opacity: 1;
+}
+.introManualQuerySpacey #spaceManualQuery,
+.introRunManualQuerySpacey #spaceManualQuery {
+  opacity: 1;
+}
+.introManualQuerySpacey #graph,
+.introRunManualQuerySpacey #graph {
+  opacity: 1;
+}
+.introManualQueryBookish #spaceManualQuery,
+.introRunManualQueryBookish #spaceManualQuery {
+  opacity: 1;
+}
+.introManualQueryBookish #graph,
+.introRunManualQueryBookish #graph {
+  opacity: 1;
+}
+.introManualQueryBookish #bookishManualQuery,
+.introRunManualQueryBookish #bookishManualQuery {
+  opacity: 1;
+}
+.introFed #spaceySchema {
+  opacity: 1;
+}
+.introFed #bookishSchema {
+  opacity: 1;
+}
+.introFed #graph {
+  opacity: 1;
+}
+.introFedBookish #spaceySchema,
+.introFedEarthseed #spaceySchema {
+  opacity: 1;
+}
+.introFedBookish #bookishFedSchema,
+.introFedEarthseed #bookishFedSchema {
+  opacity: 1;
+}
+.introFedBookish #graph,
+.introFedEarthseed #graph {
+  opacity: 1;
+}
+.introFedEarthseedOrbit #graph,
+.introFedEarthseedRunQuery #graph {
+  opacity: 1;
 }
 
 /*# sourceMappingURL=intro.0906d120.css.map */

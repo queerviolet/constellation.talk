@@ -4,14 +4,13 @@
 <title>Learning from Machines</title>
 <link rel=stylesheet href=base.less>
 <link rel=stylesheet href=intro.less>
-<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@600;700&display=swap" rel="stylesheet">
-<!-- <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script> -->
-<script src=aframe.ts></script>
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600;700" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@600;700" rel="stylesheet">
 
+<div id=backdrop></div>
 <div id=graph></div>
 
-<script src=stage.ts></script>
+<!-- <script src=stage.ts></script> -->
 <script src=main.js></script>
 
 <style>
@@ -19,18 +18,25 @@
 </style>
 <script src=graphql.ts></script>
 
-<build-note id=title>hi</build-note>
+<build-note id=title>
+hi, i'm ashi krishnan, i work at apollo, and i'm here to talk about project constellation.
 
-<build-note id=introLaunchSchema>
-  
+project constellation covers a number of initiatives inside apollo. for now, think of it as the next version of federation. we're aiming to make it easier for you to weave together data graphs and end up with exactly the data you need, in exactly the shape you need it. that's the promise of graphql.
+
+first, let's look at the state of graphql and federation today.
 </build-note>
-<pre id=launchSchemaSource>
-<code id=launchSchema class=graphql>
+
+<build-note id=introCommonLanguage>
+  graphql gives us a common language to describe all the data available through an API. say we're an organization who launches people into space. we'll presumably have a database tracking who we have launched (or will launch) into space. and then we'll write a graphql schema to expose that data for our website where you can see who we've launched into space. the graphql schema might look like this:
+</build-note>
+
+<pre id=spaceySchema>
+<code class=graphql>
   type Query {
     launches: [Launch!]!
     astronaut(byName: String!): Astronaut
     missions: [Mission!]!
-    ships(byStatus: ShipStatus): [Ship!]!
+    ships: [Ship!]!
   }
 
   type Launch {
@@ -45,11 +51,8 @@
     id: ID!
     name: String
     type: String
-    status: ShipStatus
   }
-
-  enum ShipStatus { ACTIVE, CONSTRUCTION, MAINTENANCE, RETIRED }
-  
+ 
   type Astronaut {
     id: ID!
     name: String!    
@@ -58,75 +61,286 @@
   
   type Mission {
     name: String
-    missionPatch(size: PatchSize): String
-    viableShips: [Ship!]!
-  }
-  
-  enum PatchSize {
-    SMALL
-    LARGE
   }
 </code>
 </pre>
 
-<build-note id=introLaunchGraph>here's the graph of it</build-note>
-<build-note id=introOnlyGraph></build-note>
+<build-note id=introSpaceySchema>
+  this looks like a tree, but when we parse it, we can see that it creates a structure with cross-links—
+</build-note>
 
-<script> 
-  const EMPTY = {nodes: [], links: []}
+<script>
+  EMPTY = {nodes: [], links: []}
+  When(buildInRange(title, introSpaceySchema))
+    .start(() => Graph.graphData(EMPTY))
+</script>
 
-  function relink(graphData) {
-    for (const l of graphData.links) {
-      l.source = typeof l.source === 'string' ? l.source : l.source.id
-      l.target = typeof l.target === 'string' ? l.target : l.target.id
+<build-note id=introSpaceyGraph>
+  —that is, it gets linked into a graph.
+</build-note>
+
+<build-note id=introSpaceyGraphOrbit>
+  in this graph, types are nodes—they are places you can *be*. fields are edges—they are ways you can *move*. resolvers teach us *how to walk along an edge*.
+</build-note>
+
+<pre id=bookishSchema>
+  <code class=graphql>
+    type Query {
+      books(forAstronaut: ID!): [Book]
     }
-    for (const n of graphData.nodes) {
-      if (n.__threeObj) {
-        Object.assign(n, n.__threeObj.position)
+    
+    type Book {
+      title: String
+      author: Author
+      themes: [String!]
+    }
+    
+    type Author {
+      name: String
+      books: [Book!]
+    }
+  </code>
+</pre>
+
+<pre id=spaceyQuery>
+  <code class=graphql>
+    query {
+      astronaut(byName: "Sally") {
+        trips {
+          mission { name }
+        }
       }
     }
-    return graphData
-  }
+  </code>
+</pre>
 
-  function squish(graphData, to=0.1) {
-    for (const n of graphData.nodes) {
-      if (n.__threeObj) {
-        Object.assign(n.__threeObj.position, n.__threeObj.position.multiplyScalar(0.1).add(new THREE.Vector3(Math.random(), Math.random(), Math.random()).multiplyScalar(5)))
-      }
-    }
-    return graphData
-  }
+<build-note id=introSpaceyQuery>
+  so when we receive a query
+</build-note>
+<build-note id=introSpaceyRunQuery>
+  the resolvers know how to take us to the data
 
-  let data = null
-  function setData(graphData) {    
-    if (data !== graphData) Graph.graphData(graphData)
-    data = graphData    
-    return Graph
-  }
+  if we didn't have graphql, we would still be able to expose this data. we'd just have to come up with our own interface to request it—maybe some RESTful api. 
 
-  parsed = parseToGraph(launchSchema.textContent)
-  When(title).start(() => setData(EMPTY))
-  When(introLaunchSchema).start(() => setData(EMPTY))
-  
-  let query
-  When(introLaunchGraph)
-    .start(() => {      
-      let data = relink(parsed)
-      query = data.nodes.find(n => n.name === 'Query')
-      setData(data)
-        .forceEngine('d3')
-        .numDimensions(2)
-        .cameraPosition({ x: 0, y: 100, z: 350 }, query, 400)
-    })
-    .frame(spin(100, query))
+  but graphql gives us a common language for expressing our schema. that common language makes it easier to get data out of graphql endpoints. it also means that endpoints can be merged together and treated as a single graph.
 
-  When(introOnlyGraph)
+  after we've been launching people into space for a while, we notice that most of the people who want to go to space are sci-fi fans, so we want to roll out a feature where we track what folks are reading and use it to inspire future missions. this project is run by a separate team, so they produce a separate schema:
+</build-note>
+
+<script>
+  spacey = parseToGraph('spacey', spaceySchema.textContent)  
+  When(buildInRange(introSpaceyGraph, introSpaceyRunQuery))
+    .start(() => Graph.graphData(spacey).clearHighlights().recenter())
+
+  When(buildInRange(introSpaceyGraphOrbit, introSpaceyRunQuery))
+    .withDuration(3[sec])
+    .at(orbit())
+
+  When(introSpaceyRunQuery)
     .start(() => {
-      Graph.forceEngine('none')
-        .enableNodeDrag(true)
+      Graph.highlight('spacey.Query')
+      graphql(spacey.schema, spaceyQuery.innerText)
     })
 </script>
 
+<build-note id=introBookishSchema>
+  which links into another graph
+</build-note>
+<build-note id=introBookishGraph>
+  there's a subtle connection to our space graph here:
+</build-note>
+<build-note id=introBookishGraphOrbit>
+  specifically, we can look up the books for a particular astronaut's ID.  
+</build-note>
+
+<script>
+  bookish = parseToGraph('bookish', bookishSchema.textContent)
+
+  When(introBookishSchema).start(() => Graph.graphData(EMPTY))
+
+  When(buildInRange(introBookishGraph, introBookishGraphOrbit))
+    .start(() => {
+      Graph.graphData(bookish).recenter()
+        .clearHighlights()
+    })
+
+  When(introBookishGraphOrbit)
+    .withDuration(3[sec])
+    .at(orbit())
+</script>
+
+<build-note id=introBothGraph>
+  but that's not really represented in the graph itself.
+</build-note>
+
+<build-note id=introBothGraphOrbit>
+  the two graphs are disconnected. so if we want to do a query across them, we have to do that query separately, and manually
+</build-note>
+
+<pre id=spaceManualQuery>
+  <code class=graphql>
+    query GetAstronautId($name: String!) {
+      astronaut(byName: $name) { id }
+    }
+
+    # variables: { name: "sally" }
+  </code>
+</pre>
+
+<pre id=bookishManualQuery>
+  <code class=graphql>
+    query GetAstronautTitles($id: ID!) {
+      books(forAstronaut: $id) {
+        title
+      }
+    }
+  </code>
+</pre>
+
+<build-note id=introManualQuerySpacey>
+  first, we query spacey to get the id of an astronaut we're interested in
+</build-note>
+<build-note id=introRunManualQuerySpacey></build-note>
+<build-note id=introManualQueryBookish>
+  then we have to shuttle that data over to bookish ourselves to query for the astronaut's titles
+</build-note>
+<build-note id=introRunManualQueryBookish>
+  this gets us the data we need, but it's not exactly ideal. it breaks the graphql promise of making one query to feed your frontend
+
+  federation solves this.
+</build-note>
+
+<script>
+  When(introRunManualQuerySpacey)
+    .start(() => {
+      Graph.clearHighlights()
+      graphql(spacey.schema, spaceManualQuery.textContent,
+        {},
+        {},
+        { name: "sally" })
+    })
+
+  When(introRunManualQueryBookish)
+    .start(() => {
+      graphql(bookish.schema, bookishManualQuery.textContent,
+        {},
+        {},
+        { id: 0 })
+    })
+</script>
+
+<build-note id=introFed>
+  to link these two graphs with federation, we don't need to change our spacey schema at all
+</build-note>
+
+<build-note id=introFedBookish>
+  but we do need to make a few changes to our bookish schema. these changes teach the federation composer how to build *another* graph
+</build-note>
+
+<pre id=bookishFedSchema>
+  <code class=graphql>
+    extend type Query {
+      books(forAstronaut: ID!): [Book]
+    }
+
+    extend type Astronaut @key(fields: "id") {
+      id: ID! @external
+      books: [Book]
+    }
+    
+    type Book {
+      title: String
+      author: Author
+      themes: [String!]
+    }
+    
+    type Author {
+      name: String
+      books: [Book!]
+    }
+  </code>
+</pre>
+
+<build-note id=introFedEarthseed>
+  the federated graph
+</build-note>
+
+<build-note id=introFedEarthseedOrbit>
+  the federated graph
+</build-note>
+
+<build-note id=introFedEarthseedRunQuery>
+
+</build-note>
+
+
+<pre id=earthseedQuery>
+  <code class=graphql>
+    query {
+      astronaut(byName: "sally") {
+        books { title }
+      }
+    }
+  </code>
+</pre>
+
+<script>
+  spaceyAndBookish = {
+    nodes: [...spacey.nodes, ...bookish.nodes],
+    links: [...spacey.links, ...bookish.links]
+  }
+
+  When(buildInRange(introBothGraph, introFedBookish))
+    .start(() => Graph.graphData(spaceyAndBookish).recenter().clearHighlights())
+
+  When(buildInRange(introBothGraphOrbit, introFed))
+    .withDuration(3[sec])
+    .at(orbit())
+
+  When(introFedBookish)
+    .start(() => Graph.recenter().clearHighlights())
+    
+  fedSpaceyBookish = composeServices([
+    {
+      name: 'spacey',
+      typeDefs: gql.call(null, [spaceySchema.textContent]),      
+    },
+    {
+      name: 'bookish',
+      typeDefs: gql.call(null, [bookishFedSchema.textContent]),
+    }
+  ])
+
+  earthseed = parseToGraph('earthseed', fedSpaceyBookish.schema)
+  console.log('EARTHSEED:', earthseed.schema)
+  
+  spaceyBookishEarthseed = {
+    nodes: [...spacey.nodes, ...bookish.nodes, ...earthseed.nodes],
+    links: [...spacey.links, ...bookish.links, ...earthseed.links],
+  }
+  
+  When(introFedEarthseed)
+    .start(() => {
+      Graph.graphData(spaceyBookishEarthseed).recenter().clearHighlights()
+    })
+
+  When(buildInRange(introFedEarthseedOrbit, introFedEarthseedRunQuery))
+    .withDuration(3[sec])
+    .at(orbit())
+
+  When(introFedEarthseedRunQuery)
+    .start(() => {
+      graphql(earthseed.schema, earthseedQuery.textContent)
+      graphql(spacey.schema, spaceManualQuery.textContent,
+        {},
+        {},
+        { name: "sally" })
+      graphql(bookish.schema, bookishManualQuery.textContent,
+        {},
+        {},
+        { id: 0 })            
+    })
+</script>
 
 <!-- Letterbox & Bug -->
 <link rel=stylesheet href=bug.less>

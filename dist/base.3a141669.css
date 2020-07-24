@@ -5,7 +5,7 @@ html {
   height: 100%;
 }
 body {
-  background: #060f2f;
+  background: #030818;
   font-family: Monaco;
   font-size: 26px;
   padding: 0;
@@ -25,6 +25,10 @@ code {
 }
 h1 {
   color: #f0f7ff;
+}
+.fades {
+  transition: opacity 1000ms;
+  opacity: 0;
 }
 .absoluteCenter {
   position: absolute;
@@ -82,6 +86,8 @@ build-note {
   left: var(--letterbox-left);
   bottom: var(--letterbox-bottom);
   right: var(--letterbox-right);
+  transition: opacity 1000ms;
+  opacity: 0;
 }
 
 /*# sourceMappingURL=base.3a141669.css.map */

@@ -1,12 +1,19 @@
 // SpaceKit colors from https://space-kit.netlify.app/
 
+import {Color} from 'three'
+
 //-- Brand colors --//
 const rgb = (r: number, g: number, b: number, a = 1.0) => ({
   a(a: number) { return rgb(r, g, b, a) },
+  get three() {
+    return new Color(r, g, b)
+  },
   toString() {
     return `rgba(${r}, ${g}, ${b}, ${a})`
   },
 })
+
+export type RGBA = ReturnType<typeof rgb>
 
 export const pink = {
   darkest: rgb(102, 31, 78),

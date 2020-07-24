@@ -412,6 +412,8 @@ function hmrAcceptRun(bundle, id) {
 
 var _timeline = _interopRequireDefault(require("./timeline"));
 
+require("./stage.ts");
+
 var _highlight = _interopRequireDefault(require("highlight.js"));
 
 var _highlightjsGraphql = _interopRequireDefault(require("highlightjs-graphql"));
@@ -448,6 +450,7 @@ Object.assign(global, {
 // import './fire'
 function collectBuilds() {
   const all = Array.from(document.getElementsByTagName('build-note'));
+  console.log('BUILDS=', all);
   let i = all.length;
 
   while (i-- > 0) {
@@ -699,7 +702,7 @@ addEventListener('keydown', onKey); // addEventListener('mousedown', () => curre
 // setCurrentBuild(currentBuild.nextBuild))
 
 addEventListener('touchstart', () => currentBuild && currentBuild.nextBuild && setCurrentBuild(currentBuild.nextBuild));
-},{"./timeline":"479df63fcf01fa02e81ad48d6eca331a","highlight.js":"461f4b23230495a78ada51375a2cdfdd","highlightjs-graphql":"bb1f84bf95cb04ac4d3ac5e3acdcf0c6","highlight.js/styles/atelier-cave-dark.css":"59b7bd8f7d5b913cc0e89b3b22649c91","./when":"36610a9d3b60041d5afed0d0c46dfc02","./type-writer":"b2f3c44cf2b5ebd30543f98ad15b4f68","./seek-able":"6ff132b19e70d3202dc4a72ecdf9d59b"}],"479df63fcf01fa02e81ad48d6eca331a":[function(require,module,exports) {
+},{"./timeline":"479df63fcf01fa02e81ad48d6eca331a","./stage.ts":"decff87b80d38dbe8c94f3b323cea37d","highlight.js":"461f4b23230495a78ada51375a2cdfdd","highlightjs-graphql":"bb1f84bf95cb04ac4d3ac5e3acdcf0c6","highlight.js/styles/atelier-cave-dark.css":"59b7bd8f7d5b913cc0e89b3b22649c91","./when":"36610a9d3b60041d5afed0d0c46dfc02","./type-writer":"b2f3c44cf2b5ebd30543f98ad15b4f68","./seek-able":"6ff132b19e70d3202dc4a72ecdf9d59b"}],"479df63fcf01fa02e81ad48d6eca331a":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

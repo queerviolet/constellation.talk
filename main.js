@@ -4,6 +4,7 @@ global.Timeline = Timeline
 // import Builds from './builds'
 
 // global.Builds = Builds
+import './stage.ts'
 
 import hljs from 'highlight.js'
 import hljsGraphQl from 'highlightjs-graphql'
@@ -21,6 +22,7 @@ import './seek-able'
 
 function collectBuilds() {
   const all = Array.from(document.getElementsByTagName('build-note'))
+  console.log('BUILDS=', all)
   let i = all.length; while (i --> 0) {
     const b = all[i]
     b.order = i

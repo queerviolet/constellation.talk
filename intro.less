@@ -1,13 +1,73 @@
 @import "base.less";
 
-.introLaunchSchema, .introLaunchGraph {
-  #launchSchemaSource {
-    display: none;
-    // .fixed();
-    // width: auto;    
-  }
+// -- stage setup --
+
+#spaceySchema, #spaceyQuery, #spaceManualQuery, #earthseedQuery {
+  .stage(0, 0, 8, 9);
+  .fades();
 }
 
-.introOnlyGraph {
-  #launchSchemaSource { display: none; }
+#bookishSchema, #bookishManualQuery, #bookishFedSchema {
+  .stage(0, 10, 6, 9);
+  .fades();
+}
+
+// -- builds --
+
+.introSpaceySchema {
+  #spaceySchema { opacity: 1; }
+}
+
+.introSpaceyGraph,
+.introSpaceyGraphOrbit {
+  .introSpaceySchema();
+  #graph { opacity: 1; }
+}
+
+.introSpaceyQuery,
+.introSpaceyRunQuery {
+  #spaceyQuery { opacity: 1; }
+  #graph { opacity: 1; }
+}
+
+.introBookishSchema {
+  #bookishSchema { opacity: 1; }
+}
+
+.introBookishGraph,
+.introBookishGraphOrbit {
+  .introBookishSchema();
+  #graph { opacity: 1; }
+}
+
+.introBothGraph, .introBothGraphOrbit {
+  #spaceySchema { opacity: 1; }
+  #bookishSchema { opacity: 1; }
+  #graph { opacity: 1; }
+}
+
+.introManualQuerySpacey,
+.introRunManualQuerySpacey {
+  #spaceManualQuery { opacity: 1; }  
+  #graph { opacity: 1; }
+}
+
+.introManualQueryBookish,
+.introRunManualQueryBookish {
+  .introRunManualQuerySpacey();
+  #bookishManualQuery { opacity: 1; }
+}
+
+.introFed {
+  .introBothGraphOrbit();
+}
+
+.introFedBookish, .introFedEarthseed {
+  #spaceySchema { opacity: 1; }
+  #bookishFedSchema { opacity: 1; }
+  #graph { opacity: 1; }
+}
+
+.introFedEarthseedOrbit, .introFedEarthseedRunQuery {
+  #graph { opacity: 1; }
 }
