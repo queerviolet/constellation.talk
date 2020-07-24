@@ -34,12 +34,15 @@ const graphColors = {
 export const Atlas: {
   [id: string]: {
     node?: any
+    link?: any
     three?: THREE.Object3D
+    sprite?: SpriteTextExt
   }
 } = {}
 
 type SpriteTextExt = SpriteText & {
   baseColor?: RGBA
+  baseTextHeight?: number
 }
 
 Graph
@@ -61,57 +64,35 @@ Graph
     sprite.fontFace = 'Source Sans Pro';
     sprite.fontWeight = '600'
     sprite.padding = 1
+    sprite.material.depthWrite = false
+    sprite.material.blending = THREE.AdditiveBlending
 
     let color
     if (node.isRoot) {
       color = palette.lightest
-      sprite.textHeight = 12
+      sprite.baseTextHeight = sprite.textHeight = 12
     } else if (node.isField) {
       color = node.isScalar ? palette.dark : palette.base
-      sprite.textHeight = 8
+      sprite.baseTextHeight = sprite.textHeight = 8      
       sprite.fontWeight = '700'
     } else {
       color = palette.light
-      sprite.textHeight = 10
+      sprite.baseTextHeight = sprite.textHeight = 10
     }
-    obj.onBeforeRender = () => {
-      if (!Graph.highlighted) {
-        sprite.color = color.a(1).toString()
-        return
-      }
-      sprite.color = Graph.highlighted.has(node.id)
-        ? color.a(1).toString()
-        : color.a(0.2).toString()        
-    }
+    sprite.color = color.a(1).toString()
+    sprite.baseColor = color
 
     obj.add(sprite)    
-    Atlas[node.id].three = obj;
+    Atlas[node.id].three = obj
+    Atlas[node.id].sprite = sprite
     return obj
   })
-  .linkColor(blue.light.toString())
-  
-  // .linkWidth(link => link.id === 'spacey.Query.missions:in' ? 5 : 1)
-  // .linkOpacity(link => link.id === 'spacey.Query.missions:in' ? 1 : 0.2)
-  // .nodeOpacity(node => node.id === 'spacey.Query.missions' ? 1 : 0.2)
-  // .linkThreeObjectExtend(true)
-  // .linkThreeObject((link: any) => {
-  //   // extend link with text sprite
-  //   const sprite = new SpriteText(link.name);
-  //   sprite.color = 'lightgrey';
-  //   sprite.fontFace = 'Source Sans Pro';
-  //   sprite.textHeight = 2;
-  //   return sprite;
-  // })
-  // .linkPositionUpdate((sprite, { start, end }) => {
-  //   const middlePos = Object.assign({}, ...['x', 'y', 'z'].map(c => ({
-  //     [c]: start[c] + (end[c] - start[c]) / 2 // calc middle point
-  //   })));
-
-  //   // Position sprite
-  //   Object.assign(sprite.position, middlePos);
-
-  //   return true;
-  // })
+  .linkWidth(link =>
+    Graph.highlighted?.has(link.id)
+      ? 5
+      : 0.5
+  )
+  .linkColor(blue.light.toString())  
   .showNavInfo(false)
   .linkDirectionalArrowLength(6)
   .linkDirectionalArrowRelPos(0.5)
@@ -128,6 +109,21 @@ Graph
 
 Graph.updateHighlight = function() {
   this.linkDirectionalParticles(this.linkDirectionalParticles())
+  if (!this.highlighted) {
+    for (const id in Atlas) {
+      const sprite = Atlas[id].sprite
+      if (!sprite) continue
+      sprite.color = sprite.baseColor.a(1).toString()
+    }
+    return
+  }
+  for (const id in Atlas) {
+    const sprite = Atlas[id].sprite
+    if (!sprite) continue
+    sprite.color = this.highlighted.has(id)
+      ? sprite.baseColor.a(1).toString()
+      : sprite.baseColor.a(0.2).toString()
+  }      
   return this
 }
 
@@ -188,17 +184,19 @@ Graph.zoomToFit = function(...args: Parameters<ForceGraph3DInstance["zoomToFit"]
   ++this.isAutoZooming
   ztf.apply(this, args)
   setTimeout(() => {
+    setTextSizeForDistance(this.camera().position.length())
     --this.isAutoZooming
   }, args[0])
   return this
 }
 
-// const gd = Graph.graphData
-// Graph.graphData = function(...args: [] | Parameters<ForceGraph3DInstance["graphData"]>) {  
-//   if (!args.length) return gd.apply(this) as any
-//   setTimeout(() => this.zoomToFit(600), 1000)
-//   return gd.apply(this, args)
-// }
+function setTextSizeForDistance(distance=300) {
+  for (const id in Atlas) {
+    const {sprite} = Atlas[id]
+    if (!sprite) continue
+    sprite.textHeight = Math.max(sprite.baseTextHeight, sprite.baseTextHeight * distance / 600)
+  }
+}
 
 async function doRecenter(graph: ForceGraph3D, ms = 600) {
   graph.zoomToFit(ms)

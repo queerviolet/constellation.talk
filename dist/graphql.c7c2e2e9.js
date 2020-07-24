@@ -468,15 +468,12 @@ function resolver(ns, schema, type, field) {
 
     _stage.Graph.highlight(id + ':in');
 
-    _stage.Graph.highlight(id);
+    _stage.Graph.highlight(id); // if (field.also) {
+    //   for (const {id} of field.also) {
+    //     Graph.highlight(id)
+    //   }
+    // }
 
-    if (field.also) {
-      for (const {
-        id
-      } of field.also) {
-        _stage.Graph.highlight(id);
-      }
-    }
 
     await (0, _time.sleep)(1000);
 
@@ -497,7 +494,7 @@ function parseToGraph(ns, source) {
   const nodes = [];
 
   function addNode(node) {
-    const existing = _stage.Atlas[node.id];
+    const existing = _stage.Atlas[node.id]?.node;
 
     if (existing) {
       Object.assign(existing, node);
@@ -505,13 +502,15 @@ function parseToGraph(ns, source) {
       return existing;
     }
 
-    _stage.Atlas[node.id] = node;
+    _stage.Atlas[node.id] = {
+      node
+    };
     nodes.push(node);
     return node;
   }
 
   function addLink(link) {
-    const existing = _stage.Atlas[link.id];
+    const existing = _stage.Atlas[link.id]?.link;
 
     if (existing) {
       Object.assign(existing, link);
@@ -519,7 +518,9 @@ function parseToGraph(ns, source) {
       return existing;
     }
 
-    _stage.Atlas[link.id] = link;
+    _stage.Atlas[link.id] = {
+      link
+    };
     links.push(link);
     return link;
   }

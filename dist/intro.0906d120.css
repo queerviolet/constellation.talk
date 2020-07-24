@@ -86,8 +86,11 @@ build-note {
   left: var(--letterbox-left);
   bottom: var(--letterbox-bottom);
   right: var(--letterbox-right);
-  transition: opacity 1000ms;
-  opacity: 0;
+  transition: filter 1s;
+  filter: blur(20px);
+}
+.showGraph #graph {
+  filter: none;
 }
 #spaceySchema,
 #spaceyQuery,
@@ -125,7 +128,7 @@ build-note {
 }
 .introSpaceyGraph #graph,
 .introSpaceyGraphOrbit #graph {
-  opacity: 1;
+  filter: none;
 }
 .introSpaceyQuery #spaceyQuery,
 .introSpaceyRunQuery #spaceyQuery {
@@ -133,7 +136,7 @@ build-note {
 }
 .introSpaceyQuery #graph,
 .introSpaceyRunQuery #graph {
-  opacity: 1;
+  filter: none;
 }
 .introBookishSchema #bookishSchema {
   opacity: 1;
@@ -144,7 +147,7 @@ build-note {
 }
 .introBookishGraph #graph,
 .introBookishGraphOrbit #graph {
-  opacity: 1;
+  filter: none;
 }
 .introBothGraph #spaceySchema,
 .introBothGraphOrbit #spaceySchema {
@@ -156,7 +159,7 @@ build-note {
 }
 .introBothGraph #graph,
 .introBothGraphOrbit #graph {
-  opacity: 1;
+  filter: none;
 }
 .introManualQuerySpacey #spaceManualQuery,
 .introRunManualQuerySpacey #spaceManualQuery {
@@ -164,7 +167,7 @@ build-note {
 }
 .introManualQuerySpacey #graph,
 .introRunManualQuerySpacey #graph {
-  opacity: 1;
+  filter: none;
 }
 .introManualQueryBookish #spaceManualQuery,
 .introRunManualQueryBookish #spaceManualQuery {
@@ -172,7 +175,7 @@ build-note {
 }
 .introManualQueryBookish #graph,
 .introRunManualQueryBookish #graph {
-  opacity: 1;
+  filter: none;
 }
 .introManualQueryBookish #bookishManualQuery,
 .introRunManualQueryBookish #bookishManualQuery {
@@ -185,7 +188,7 @@ build-note {
   opacity: 1;
 }
 .introFed #graph {
-  opacity: 1;
+  filter: none;
 }
 .introFedBookish #spaceySchema,
 .introFedEarthseed #spaceySchema {
@@ -197,10 +200,19 @@ build-note {
 }
 .introFedBookish #graph,
 .introFedEarthseed #graph {
-  opacity: 1;
+  filter: none;
 }
-.introFedEarthseedOrbit #graph,
-.introFedEarthseedRunQuery #graph {
+.introFedEarthseedOrbit #graph {
+  filter: none;
+}
+.introFedEarthseedQuery #graph,
+.introFedEarthseedRunQuery #graph,
+.introFedEarthseedRunSubQueries #graph {
+  filter: none;
+}
+.introFedEarthseedQuery #earthseedQuery,
+.introFedEarthseedRunQuery #earthseedQuery,
+.introFedEarthseedRunSubQueries #earthseedQuery {
   opacity: 1;
 }
 

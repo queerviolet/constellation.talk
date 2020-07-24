@@ -126,13 +126,16 @@ first, let's look at the state of graphql and federation today.
 
   after we've been launching people into space for a while, we notice that most of the people who want to go to space are sci-fi fans, so we want to roll out a feature where we track what folks are reading and use it to inspire future missions. this project is run by a separate team, so they produce a separate schema:
 </build-note>
+<build-note id=introBookishSchema>
+  which links into another graph
+</build-note>
 
 <script>
   spacey = parseToGraph('spacey', spaceySchema.textContent)  
   When(buildInRange(introSpaceyGraph, introSpaceyRunQuery))
     .start(() => Graph.graphData(spacey).clearHighlights().recenter())
 
-  When(buildInRange(introSpaceyGraphOrbit, introSpaceyRunQuery))
+  When(buildInRange(introSpaceyGraphOrbit, introBookishSchema))
     .withDuration(3[sec])
     .at(orbit())
 
@@ -143,9 +146,6 @@ first, let's look at the state of graphql and federation today.
     })
 </script>
 
-<build-note id=introBookishSchema>
-  which links into another graph
-</build-note>
 <build-note id=introBookishGraph>
   there's a subtle connection to our space graph here:
 </build-note>
@@ -155,8 +155,6 @@ first, let's look at the state of graphql and federation today.
 
 <script>
   bookish = parseToGraph('bookish', bookishSchema.textContent)
-
-  When(introBookishSchema).start(() => Graph.graphData(EMPTY))
 
   When(buildInRange(introBookishGraph, introBookishGraphOrbit))
     .start(() => {
@@ -192,6 +190,7 @@ first, let's look at the state of graphql and federation today.
     query GetAstronautTitles($id: ID!) {
       books(forAstronaut: $id) {
         title
+        author { name }
       }
     }
   </code>
@@ -222,6 +221,7 @@ first, let's look at the state of graphql and federation today.
 
   When(introRunManualQueryBookish)
     .start(() => {
+      Graph.zoomToFit(300)
       graphql(bookish.schema, bookishManualQuery.textContent,
         {},
         {},
@@ -234,7 +234,7 @@ first, let's look at the state of graphql and federation today.
 </build-note>
 
 <build-note id=introFedBookish>
-  but we do need to make a few changes to our bookish schema. these changes teach the federation composer how to build *another* graph
+  but we do need to make a few changes to our bookish schema. these changes teach the federation gateway how to build *another* graph
 </build-note>
 
 <pre id=bookishFedSchema>
@@ -266,19 +266,31 @@ first, let's look at the state of graphql and federation today.
 </build-note>
 
 <build-note id=introFedEarthseedOrbit>
-  the federated graph
+  the federated graph joins our other two graphs. you can think of it as a projection of both of them. a pretty faithful one—it contains all the types and fields from all our services, with the same types, names, arguments, and so on.
+
+  it also knows where those types and fields are *from* and, thanks to keys, how to get from one graph to another.
+</build-note>
+
+<build-note id=introFedEarthseedQuery>
+  now we can express our request as a single query against the federated graph
 </build-note>
 
 <build-note id=introFedEarthseedRunQuery>
-
+  and when we run the query
 </build-note>
 
+<build-note id=introFedEarthseedRunSubQueries>
+  the gateway knows what queries to issue against its subgraphs to resolve the data we asked for
+</build-note>
 
 <pre id=earthseedQuery>
   <code class=graphql>
     query {
       astronaut(byName: "sally") {
-        books { title }
+        books {
+          title
+          author { name }
+        }
       }
     }
   </code>
@@ -319,18 +331,22 @@ first, let's look at the state of graphql and federation today.
     links: [...spacey.links, ...bookish.links, ...earthseed.links],
   }
   
-  When(introFedEarthseed)
+  When(buildInRange(introFedEarthseed, introFedEarthseedRunQuery))
     .start(() => {
       Graph.graphData(spaceyBookishEarthseed).recenter().clearHighlights()
     })
 
-  When(buildInRange(introFedEarthseedOrbit, introFedEarthseedRunQuery))
+  When(buildInRange(introFedEarthseedOrbit, introFedEarthseedRunSubQueries))
     .withDuration(3[sec])
     .at(orbit())
 
   When(introFedEarthseedRunQuery)
     .start(() => {
       graphql(earthseed.schema, earthseedQuery.textContent)
+    })
+
+  When(introFedEarthseedRunSubQueries)
+    .start(() => {
       graphql(spacey.schema, spaceManualQuery.textContent,
         {},
         {},

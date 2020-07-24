@@ -36,11 +36,11 @@ function resolver(ns: string, schema: GraphQLSchema, type: GraphQLObjectType, fi
     Graph.highlight(nsId(ns, type))
     Graph.highlight(id + ':in')
     Graph.highlight(id)
-    if (field.also) {
-      for (const {id} of field.also) {
-        Graph.highlight(id)
-      }
-    }
+    // if (field.also) {
+    //   for (const {id} of field.also) {
+    //     Graph.highlight(id)
+    //   }
+    // }
     await sleep(1000)
     Graph.highlight(id + ':out')
     Graph.highlight(to)
@@ -61,27 +61,27 @@ export function parseToGraph(ns: string, source: string | GraphQLSchema) {
   const nodes = []
 
   function addNode(node: any) {
-    const existing = Atlas[node.id]
+    const existing = Atlas[node.id]?.node
     if (existing) {
       Object.assign(existing, node)
       nodes.push(existing)
       return existing
     }
     
-    Atlas[node.id] = node
+    Atlas[node.id] = { node }
     nodes.push(node)
     return node
   }
 
   function addLink(link: any) {
-    const existing = Atlas[link.id]
+    const existing = Atlas[link.id]?.link
     if (existing) {
       Object.assign(existing, link)
       links.push(existing)
       return existing
     }
     
-    Atlas[link.id] = link
+    Atlas[link.id] = { link }
     links.push(link)
     return link
   }

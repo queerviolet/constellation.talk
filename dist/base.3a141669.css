@@ -86,8 +86,11 @@ build-note {
   left: var(--letterbox-left);
   bottom: var(--letterbox-bottom);
   right: var(--letterbox-right);
-  transition: opacity 1000ms;
-  opacity: 0;
+  transition: filter 1s;
+  filter: blur(20px);
+}
+.showGraph #graph {
+  filter: none;
 }
 
 /*# sourceMappingURL=base.3a141669.css.map */

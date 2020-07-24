@@ -21,13 +21,13 @@
 .introSpaceyGraph,
 .introSpaceyGraphOrbit {
   .introSpaceySchema();
-  #graph { opacity: 1; }
+  .showGraph();
 }
 
 .introSpaceyQuery,
 .introSpaceyRunQuery {
   #spaceyQuery { opacity: 1; }
-  #graph { opacity: 1; }
+  .showGraph();
 }
 
 .introBookishSchema {
@@ -37,19 +37,19 @@
 .introBookishGraph,
 .introBookishGraphOrbit {
   .introBookishSchema();
-  #graph { opacity: 1; }
+  .showGraph();
 }
 
 .introBothGraph, .introBothGraphOrbit {
   #spaceySchema { opacity: 1; }
   #bookishSchema { opacity: 1; }
-  #graph { opacity: 1; }
+  .showGraph();
 }
 
 .introManualQuerySpacey,
 .introRunManualQuerySpacey {
   #spaceManualQuery { opacity: 1; }  
-  #graph { opacity: 1; }
+  .showGraph();
 }
 
 .introManualQueryBookish,
@@ -65,9 +65,14 @@
 .introFedBookish, .introFedEarthseed {
   #spaceySchema { opacity: 1; }
   #bookishFedSchema { opacity: 1; }
-  #graph { opacity: 1; }
+  .showGraph();
 }
 
-.introFedEarthseedOrbit, .introFedEarthseedRunQuery {
-  #graph { opacity: 1; }
+.introFedEarthseedOrbit {
+  .showGraph();
+}
+
+.introFedEarthseedQuery, .introFedEarthseedRunQuery, .introFedEarthseedRunSubQueries {
+  .showGraph();
+  #earthseedQuery { opacity: 1; }
 }
