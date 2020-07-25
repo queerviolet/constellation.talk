@@ -29,28 +29,6 @@ function zero(schema: GraphQLSchema, type: GraphQLField<any, any, any>["type"]) 
   console.error(type)
 }
 
-// function resolver(ns: string, schema: GraphQLSchema, type: GraphQLObjectType, field: GraphQLFieldExt) {
-//   const id = nsId(ns, type, field)
-//   const to = nsId(ns, ofType(field.type))
-//   return async (...args) => {
-//     console.log(id, to)
-//     Graph.highlight(nsId(ns, type))
-//     Graph.highlight(id + ':in')
-//     Graph.highlight(id)
-//     // if (field.also) {
-//     //   for (const {id} of field.also) {
-//     //     Graph.highlight(id)
-//     //   }
-//     // }
-//     await sleep(1000)
-//     Graph.highlight(id + ':out')
-//     Graph.highlight(to)
-//     const result = zero(schema, field.type)
-//     console.log('result=', result)
-//     return result
-//   }
-// }
-
 function resolver(field: Node, gqlSchema: GraphQLSchema, gqlField: GraphQLFieldExt) {
   return async () => {
     for (const input of field.linksIn) {
@@ -73,39 +51,10 @@ type GraphQLFieldExt = GraphQLField<any, any, any> & {
   also?: any[]
 }
 
-export function parseToGraph(graph: string, source: string | GraphQLSchema) {
+export function parseToGraph(graph: string, source: string | GraphQLSchema, atlas = Atlas) {
   const schema = typeof source === 'string' ? buildSchema(source) : source
   const types = schema.getTypeMap()
-  // const links = []
-  // const nodes = []
-
-  // function addNode(node: any) {
-  //   const existing = Atlas[node.id]?.node
-  //   if (existing) {
-  //     Object.assign(existing, node)
-  //     nodes.push(existing)
-  //     return existing
-  //   }
-    
-  //   console.log('adding node', node.id)
-  //   Atlas[node.id] = { node }
-  //   nodes.push(node)
-  //   return node
-  // }
-
-  // function addLink(link: any) {
-  //   const existing = Atlas[link.id]?.link
-  //   if (existing) {
-  //     Object.assign(existing, link)
-  //     links.push(existing)
-  //     return existing
-  //   }
-    
-  //   Atlas[link.id] = { link }
-  //   links.push(link)
-  //   return link
-  // }
-
+  
   for (const t in types) {
     const type = types[t]
 
@@ -113,19 +62,17 @@ export function parseToGraph(graph: string, source: string | GraphQLSchema) {
     if (isObjectType(type)) {
       // const typeId = nsId(ns, type)
       ;(type as any).resolvers = {}
-      const parentPath = { graph, owner: type.extensions?.federation.serviceName ?? graph, type: type.name }
-      const parentNode = Atlas.type(parentPath)
-      // addNode({
-      //   graph: ns,
-      //   id: typeId,
-      //   name: type.name === 'Query' ? ns + '.Query' : type.name,
-      //   isType: true,
-      //   isRoot: type.name === 'Query',
-      //   ...positionOf(typeId),
-      // })
-      // const typeOwnerNs = type.extensions?.federation.serviceName
+      const isRoot = type.name === 'Query'
+      const parentPath =
+        isRoot
+          ? { graph, owner: graph, type: type.name }
+          :
+        { graph, owner: type.extensions?.federation.serviceName ?? graph, type: type.name }
+      const parentNode = atlas.type(parentPath)
 
       const fields = type.getFields()
+      const typeFed = type.extensions?.federation
+      const typeOwner = typeFed?.serviceName ?? graph
       for (const f in fields) {
         const field: GraphQLFieldExt = fields[f]
         
@@ -134,117 +81,27 @@ export function parseToGraph(graph: string, source: string | GraphQLSchema) {
         // const fieldLabel = `${field.name}${args}`
         const returns = ofType(field.type)
         const returnsPath = { graph, owner: returns.extensions?.federation.serviceName ?? graph, type: returns.name }
+        // atlas.type(returnsPath)
 
-        const fieldNode = Atlas.field(parentPath, field.name, field.args.map(a => a.name), returnsPath)
+        const fieldNode = atlas.field(parentPath, field.name, field.args.map(a => a.name), returnsPath)
         ;(type as any).resolvers[field.name] = field.resolve = resolver(fieldNode, schema, field)
         
-        // const {federation} = field.extensions || type.extensions || {}
-        // if (federation) {
-
-        // }
-
-        // addNode({
-        //   graph: ns,
-        //   id: fieldId,
-        //   name: fieldLabel,
-        //   isField: true,
-        //   isScalar: isScalarType(finalType),
-        //   isEntryPoint: type.name === 'Query'
-        // })
-
-        // addLink({
-        //   id: fieldId + ':in',
-        //   graph: ns,
-        //   source: typeId,
-        //   target: fieldId,
-        //   curve: isObjectType(finalType) ? Math.random() - 0.5 : 0,
-        // })
-
-        // const {federation} = field.extensions || type.extensions || {}
-        // if (federation) {
-        //   field.also = field.also || []
-        //   let otherNs = federation.serviceName
-        //   let fedId = nsId(otherNs, type, field)
-        //   const extTypeId = nsId(otherNs, type)
-
-        //   if (otherNs !== typeOwnerNs) {
-        //     // This field is declared in an extension
-        //     const extEntitiesId = nsId(otherNs, {name: 'Query'}, {name: '__entities'})
-        //     const extQueryId = nsId(otherNs, {name: 'Query'})
-        //     const typeByEntitiesId = extEntitiesId + ':' + extTypeId
-        //     field.also.push(
-        //       addNode({
-        //         graph: otherNs,
-        //         id: extTypeId,
-        //         name: type.name === 'Query' ? otherNs + '.Query' : type.name,
-        //         isType: true,
-        //         isRoot: type.name === 'Query',
-        //       }),
-        //       addNode({
-        //         graph: otherNs,
-        //         id: extEntitiesId,
-        //         name: '__entities',
-        //         isField: true,
-        //       }),
-        //       addLink({
-        //         graph: otherNs,
-        //         id: extEntitiesId + ':in',
-        //         source: extQueryId,
-        //         target: extEntitiesId,              
-        //       }),
-        //       addLink({
-        //         graph: otherNs,
-        //         id: typeByEntitiesId,
-        //         source: extEntitiesId,
-        //         target: extTypeId,
-        //       }),
-        //       addLink({
-        //         graph: otherNs,
-        //         id: fedId + ':in',
-        //         source: extTypeId,
-        //         target: fedId,
-        //       })
-        //     )
-        //   }
-
-        //   field.also.push(
-        //     addNode({
-        //       graph: otherNs,
-        //       id: fedId,
-        //       name: fieldLabel,
-        //       isField: true,
-        //       isScalar: isScalarType(finalType),              
-        //     }),          
-        //     addLink({
-        //       id: fieldId + ":fed",
-        //       graph: ns,
-        //       source: fieldId,
-        //       target: fedId,
-        //     })
-        //   )
-        // }
-
-        // if (isObjectType(finalType)) {
-        //   addLink({
-        //     id: fieldId + ':out',
-        //     graph: ns,
-        //     source: fieldId,
-        //     target: nsId(ns, finalType),
-        //     curve: Math.random() - 0.5,
-        //   })
-        // }
+        const fieldFed = field.extensions?.federation
+        if (fieldFed || typeFed) {
+          const fieldOwner = fieldFed?.serviceName || typeOwner
+          const upstreamNode = atlas.field({ graph: fieldOwner, owner: fieldOwner, type: type.name }, field.name, field.args.map(a => a.name), returnsPath)
+          const origin = atlas.link(graph, fieldNode.id, upstreamNode.id, 'origin')
+          console.log(fieldOwner, field.name, origin.id)
+        }
       }
     }
   }
-  const data = Atlas.graph(graph)
-  //{nodes, links, schema}
-  console.log(graph, data)
-  return { ...data, schema }
+  return schema
 }
 
 import {composeServices} from '@apollo/federation'
 import gql from 'graphql-tag'
 
 Object.assign(window as any, {
-  parseToGraph, graphql, composeServices, gql
+  parseToGraph, graphql, composeServices, gql, Atlas
 })

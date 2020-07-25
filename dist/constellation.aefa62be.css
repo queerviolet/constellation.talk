@@ -103,6 +103,7 @@ build-note {
   transition: filter 1000ms, opacity 1000ms;
   filter: blur(20px);
   opacity: 0;
+  pointer-events: none;
 }
 #whatsNext {
   position: fixed;

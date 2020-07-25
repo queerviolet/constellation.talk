@@ -14,7 +14,7 @@ export class Entity {
 
 export class Link extends Entity {
   static id(graph: string, source: string, target: string, rel: string) {
-    return `${graph}::(${source})-[${rel}]->(${target})`
+    return `(${source})-[${rel}]->(${target})`
   }
 
   constructor(
@@ -45,6 +45,7 @@ interface Type {
 }
 
 const SCALAR_TYPES = {
+  ID: true,
   String: true,
   Int: true,
   Float: true,
@@ -117,7 +118,7 @@ interface Graph {
   links: Link[]
 }
 
-class Atlas {
+export class Atlas {
   type(type: Type) {
     const {nodes} = this
     const id = Node.id(type)
@@ -126,10 +127,6 @@ class Atlas {
     const created = Node.forType(type)
     this.addNode(created)
     this.graph(type.graph).nodes.push(created)
-
-    if (type.graph !== type.owner) {
-      this.field({ graph: type.graph, owner: type.graph, type: 'Query' }, '__entities', [], type)
-    }
     return created
   }
 
@@ -176,12 +173,16 @@ class Atlas {
   }
 
   graphData(...ids: string[]) {
+    if (!ids.length) ids = [...this.graphs.keys()]
     let data = { nodes: [], links: [] }
-    for (const id of ids) {
-      const graph = this.graph(id)
+    for (const graphId of ids) {
+      const graph = this.graph(graphId)
       data.nodes = data.nodes.concat(graph.nodes)
-      data.links = data.links.concat(graph.links)
+      data.links = data.links.concat(graph.links.filter(l => l.sourceNode && l.targetNode))
     }
+    const nodeIds = new Set(data.nodes.map(n => n.id))
+    console.log('ids', ids, nodeIds)
+    data.links = data.links.filter(l => nodeIds.has(l.sourceId) && nodeIds.has(l.targetId))
     return data
   }
 
@@ -238,6 +239,6 @@ class Atlas {
 }
 
 const theAtlas = new Atlas
-Object.assign(window, { Atlas: theAtlas })
-
 export default theAtlas
+
+Object.assign(window, { Atlas: theAtlas })

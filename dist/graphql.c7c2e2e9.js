@@ -458,28 +458,7 @@ function zero(schema, type) {
   if ((0, _graphql.isNonNullType)(type)) return zero(schema, type.ofType);
   if ((0, _graphql.isObjectType)(type)) return schema.getType(type.name).resolvers;
   console.error(type);
-} // function resolver(ns: string, schema: GraphQLSchema, type: GraphQLObjectType, field: GraphQLFieldExt) {
-//   const id = nsId(ns, type, field)
-//   const to = nsId(ns, ofType(field.type))
-//   return async (...args) => {
-//     console.log(id, to)
-//     Graph.highlight(nsId(ns, type))
-//     Graph.highlight(id + ':in')
-//     Graph.highlight(id)
-//     // if (field.also) {
-//     //   for (const {id} of field.also) {
-//     //     Graph.highlight(id)
-//     //   }
-//     // }
-//     await sleep(1000)
-//     Graph.highlight(id + ':out')
-//     Graph.highlight(to)
-//     const result = zero(schema, field.type)
-//     console.log('result=', result)
-//     return result
-//   }
-// }
-
+}
 
 function resolver(field, gqlSchema, gqlField) {
   return async () => {
@@ -507,33 +486,9 @@ function resolver(field, gqlSchema, gqlField) {
   };
 }
 
-function parseToGraph(graph, source) {
+function parseToGraph(graph, source, atlas = _atlas.default) {
   const schema = typeof source === 'string' ? (0, _graphql.buildSchema)(source) : source;
-  const types = schema.getTypeMap(); // const links = []
-  // const nodes = []
-  // function addNode(node: any) {
-  //   const existing = Atlas[node.id]?.node
-  //   if (existing) {
-  //     Object.assign(existing, node)
-  //     nodes.push(existing)
-  //     return existing
-  //   }
-  //   console.log('adding node', node.id)
-  //   Atlas[node.id] = { node }
-  //   nodes.push(node)
-  //   return node
-  // }
-  // function addLink(link: any) {
-  //   const existing = Atlas[link.id]?.link
-  //   if (existing) {
-  //     Object.assign(existing, link)
-  //     links.push(existing)
-  //     return existing
-  //   }
-  //   Atlas[link.id] = { link }
-  //   links.push(link)
-  //   return link
-  // }
+  const types = schema.getTypeMap();
 
   for (const t in types) {
     const type = types[t];
@@ -543,24 +498,20 @@ function parseToGraph(graph, source) {
       // const typeId = nsId(ns, type)
       ;
       type.resolvers = {};
-      const parentPath = {
+      const isRoot = type.name === 'Query';
+      const parentPath = isRoot ? {
+        graph,
+        owner: graph,
+        type: type.name
+      } : {
         graph,
         owner: type.extensions?.federation.serviceName ?? graph,
         type: type.name
       };
-
-      const parentNode = _atlas.default.type(parentPath); // addNode({
-      //   graph: ns,
-      //   id: typeId,
-      //   name: type.name === 'Query' ? ns + '.Query' : type.name,
-      //   isType: true,
-      //   isRoot: type.name === 'Query',
-      //   ...positionOf(typeId),
-      // })
-      // const typeOwnerNs = type.extensions?.federation.serviceName
-
-
+      const parentNode = atlas.type(parentPath);
       const fields = type.getFields();
+      const typeFed = type.extensions?.federation;
+      const typeOwner = typeFed?.serviceName ?? graph;
 
       for (const f in fields) {
         const field = fields[f]; // const fieldId = nsId(ns, type, field)
@@ -572,116 +523,35 @@ function parseToGraph(graph, source) {
           graph,
           owner: returns.extensions?.federation.serviceName ?? graph,
           type: returns.name
-        };
+        }; // atlas.type(returnsPath)
 
-        const fieldNode = _atlas.default.field(parentPath, field.name, field.args.map(a => a.name), returnsPath);
+        const fieldNode = atlas.field(parentPath, field.name, field.args.map(a => a.name), returnsPath);
+        type.resolvers[field.name] = field.resolve = resolver(fieldNode, schema, field);
+        const fieldFed = field.extensions?.federation;
 
-        type.resolvers[field.name] = field.resolve = resolver(fieldNode, schema, field); // const {federation} = field.extensions || type.extensions || {}
-        // if (federation) {
-        // }
-        // addNode({
-        //   graph: ns,
-        //   id: fieldId,
-        //   name: fieldLabel,
-        //   isField: true,
-        //   isScalar: isScalarType(finalType),
-        //   isEntryPoint: type.name === 'Query'
-        // })
-        // addLink({
-        //   id: fieldId + ':in',
-        //   graph: ns,
-        //   source: typeId,
-        //   target: fieldId,
-        //   curve: isObjectType(finalType) ? Math.random() - 0.5 : 0,
-        // })
-        // const {federation} = field.extensions || type.extensions || {}
-        // if (federation) {
-        //   field.also = field.also || []
-        //   let otherNs = federation.serviceName
-        //   let fedId = nsId(otherNs, type, field)
-        //   const extTypeId = nsId(otherNs, type)
-        //   if (otherNs !== typeOwnerNs) {
-        //     // This field is declared in an extension
-        //     const extEntitiesId = nsId(otherNs, {name: 'Query'}, {name: '__entities'})
-        //     const extQueryId = nsId(otherNs, {name: 'Query'})
-        //     const typeByEntitiesId = extEntitiesId + ':' + extTypeId
-        //     field.also.push(
-        //       addNode({
-        //         graph: otherNs,
-        //         id: extTypeId,
-        //         name: type.name === 'Query' ? otherNs + '.Query' : type.name,
-        //         isType: true,
-        //         isRoot: type.name === 'Query',
-        //       }),
-        //       addNode({
-        //         graph: otherNs,
-        //         id: extEntitiesId,
-        //         name: '__entities',
-        //         isField: true,
-        //       }),
-        //       addLink({
-        //         graph: otherNs,
-        //         id: extEntitiesId + ':in',
-        //         source: extQueryId,
-        //         target: extEntitiesId,              
-        //       }),
-        //       addLink({
-        //         graph: otherNs,
-        //         id: typeByEntitiesId,
-        //         source: extEntitiesId,
-        //         target: extTypeId,
-        //       }),
-        //       addLink({
-        //         graph: otherNs,
-        //         id: fedId + ':in',
-        //         source: extTypeId,
-        //         target: fedId,
-        //       })
-        //     )
-        //   }
-        //   field.also.push(
-        //     addNode({
-        //       graph: otherNs,
-        //       id: fedId,
-        //       name: fieldLabel,
-        //       isField: true,
-        //       isScalar: isScalarType(finalType),              
-        //     }),          
-        //     addLink({
-        //       id: fieldId + ":fed",
-        //       graph: ns,
-        //       source: fieldId,
-        //       target: fedId,
-        //     })
-        //   )
-        // }
-        // if (isObjectType(finalType)) {
-        //   addLink({
-        //     id: fieldId + ':out',
-        //     graph: ns,
-        //     source: fieldId,
-        //     target: nsId(ns, finalType),
-        //     curve: Math.random() - 0.5,
-        //   })
-        // }
+        if (fieldFed || typeFed) {
+          const fieldOwner = fieldFed?.serviceName || typeOwner;
+          const upstreamNode = atlas.field({
+            graph: fieldOwner,
+            owner: fieldOwner,
+            type: type.name
+          }, field.name, field.args.map(a => a.name), returnsPath);
+          const origin = atlas.link(graph, fieldNode.id, upstreamNode.id, 'origin');
+          console.log(fieldOwner, field.name, origin.id);
+        }
       }
     }
   }
 
-  const data = _atlas.default.graph(graph); //{nodes, links, schema}
-
-
-  console.log(graph, data);
-  return { ...data,
-    schema
-  };
+  return schema;
 }
 
 Object.assign(window, {
   parseToGraph,
   graphql: _graphql.graphql,
   composeServices: _federation.composeServices,
-  gql: _graphqlTag.default
+  gql: _graphqlTag.default,
+  Atlas: _atlas.default
 });
 },{"./time":"18875b723781e8234312962ddf26dfa6","graphql":"fc2b84ebcce4fc3f74b077e7e519f5c0","./stage":"decff87b80d38dbe8c94f3b323cea37d","@apollo/federation":"f2d88deae6dcec15ab403c3429e659de","graphql-tag":"7fffb83f33b4934f82b0aefca7383e0b","./atlas":"7a21966e4667722b4ba7af33161093be"}],"fc2b84ebcce4fc3f74b077e7e519f5c0":[function(require,module,exports) {
 "use strict";
@@ -36775,7 +36645,7 @@ var define;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = exports.Node = exports.Link = exports.Entity = void 0;
+exports.default = exports.Atlas = exports.Node = exports.Link = exports.Entity = void 0;
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -36800,7 +36670,7 @@ exports.Entity = Entity;
 
 class Link extends Entity {
   static id(graph, source, target, rel) {
-    return `${graph}::(${source})-[${rel}]->(${target})`;
+    return `(${source})-[${rel}]->(${target})`;
   }
 
   constructor(graph, sourceId, targetId, rel = '') {
@@ -36827,6 +36697,7 @@ var Kind;
 })(Kind || (Kind = {}));
 
 const SCALAR_TYPES = {
+  ID: true,
   String: true,
   Int: true,
   Float: true,
@@ -36933,15 +36804,6 @@ class Atlas {
     const created = Node.forType(type);
     this.addNode(created);
     this.graph(type.graph).nodes.push(created);
-
-    if (type.graph !== type.owner) {
-      this.field({
-        graph: type.graph,
-        owner: type.graph,
-        type: 'Query'
-      }, '__entities', [], type);
-    }
-
     return created;
   }
 
@@ -36995,17 +36857,21 @@ class Atlas {
   }
 
   graphData(...ids) {
+    if (!ids.length) ids = [...this.graphs.keys()];
     let data = {
       nodes: [],
       links: []
     };
 
-    for (const id of ids) {
-      const graph = this.graph(id);
+    for (const graphId of ids) {
+      const graph = this.graph(graphId);
       data.nodes = data.nodes.concat(graph.nodes);
-      data.links = data.links.concat(graph.links);
+      data.links = data.links.concat(graph.links.filter(l => l.sourceNode && l.targetNode));
     }
 
+    const nodeIds = new Set(data.nodes.map(n => n.id));
+    console.log('ids', ids, nodeIds);
+    data.links = data.links.filter(l => nodeIds.has(l.sourceId) && nodeIds.has(l.targetId));
     return data;
   }
 
@@ -37067,12 +36933,13 @@ class Atlas {
 
 }
 
+exports.Atlas = Atlas;
 const theAtlas = new Atlas();
+var _default = theAtlas;
+exports.default = _default;
 Object.assign(window, {
   Atlas: theAtlas
 });
-var _default = theAtlas;
-exports.default = _default;
 },{}]},{},["87875bebeb19c502b2a6f3da948bccfa","7d61b6886901b9f17777f64e3e00768e"], null)
 
 //# sourceMappingURL=graphql.c7c2e2e9.js.map

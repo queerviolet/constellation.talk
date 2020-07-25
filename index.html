@@ -135,9 +135,12 @@ first, let's look at the state of graphql and federation today.
 </build-note>
 
 <script>
-  spacey = parseToGraph('spacey', spaceySchema.textContent)  
+  spacey = {
+    schema: parseToGraph('spacey', spaceySchema.textContent),
+    graph: Atlas.graphData('spacey')
+  }
   When(buildInRange(introSpaceyGraph, introSpaceyRunQuery))
-    .start(() => Graph.graphData(spacey).clearHighlights().recenter())
+    .start(() => Graph.graphData(spacey.graph).clearHighlights().recenter())
 
   When(buildInRange(introSpaceyGraphOrbit, introSpaceyRunQuery))
     .withDuration(3[sec])
@@ -156,12 +159,15 @@ first, let's look at the state of graphql and federation today.
   specifically, we can look up the books for a particular astronaut's ID.  
 </build-note>
 
-<script>
-  bookish = parseToGraph('bookish', bookishSchema.textContent)
+<script>  
+  bookish = {
+    schema: parseToGraph('bookish', bookishSchema.textContent),    
+    graph: Atlas.graphData('bookish')
+  }
 
   When(buildInRange(introBookishSchema, introBookishGraphOrbit))
     .start(() => {
-      Graph.graphData(bookish).recenter()
+      Graph.graphData(bookish.graph).recenter()
         .clearHighlights()
     })
 
@@ -279,11 +285,7 @@ first, let's look at the state of graphql and federation today.
 </build-note>
 
 <build-note id=introFedEarthseedRunQuery>
-  and when we run the query
-</build-note>
-
-<build-note id=introFedEarthseedRunSubQueries>
-  the gateway knows what queries to issue against its subgraphs to resolve the data we asked for.
+  and when we run the query the gateway knows what queries to issue against its subgraphs to resolve the data we asked for.
 
   that's federation as it stands today. federation is already incredibly powerful. it lets you fold multiple graphs into one—it's effectively giving us the "reduce" part of "map/reduce", but for the structure of our data itself. as with mapreduce, this lets you parallelize work—only in this case, the work is *growing the graph*. with federation, you can have multiple teams each working on growing the graph—it grows in parallel.
 
@@ -304,17 +306,17 @@ first, let's look at the state of graphql and federation today.
 </pre>
 
 <script>
-  spaceyAndBookish = {
-    nodes: [...spacey.nodes, ...bookish.nodes],
-    links: [...spacey.links, ...bookish.links]
-  }
+  spaceyAndBookish = Atlas.graphData('spacey', 'bookish')
 
-  When(buildInRange(introBothGraph, introFedBookish))
+  When(buildInRange(introBothGraph, introFed))
     .start(() => Graph.graphData(spaceyAndBookish).recenter().clearHighlights())
 
   When(buildInRange(introBothGraphOrbit, introFed))
     .withDuration(3[sec])
     .at(orbit())
+
+  // parseToGraph(fedAtlas, 'bookish', bookishFedSchema.textContent)
+  // parseToGraph(fedAtlas, 'spacey', spaceySchema.textContent)
 
   When(introFedBookish)
     .start(() => Graph.recenter().clearHighlights())
@@ -329,38 +331,32 @@ first, let's look at the state of graphql and federation today.
       typeDefs: gql.call(null, [bookishFedSchema.textContent]),
     }
   ])
-
-  earthseed = parseToGraph('earthseed', fedSpaceyBookish.schema)
-  console.log('EARTHSEED:', earthseed.schema)
   
-  spaceyBookishEarthseed = {
-    nodes: [...spacey.nodes, ...bookish.nodes, ...earthseed.nodes],
-    links: [...spacey.links, ...bookish.links, ...earthseed.links],
+  earthseed = {
+    schema: parseToGraph('earthseed', fedSpaceyBookish.schema),
+    graph: Atlas.graphData()
   }
   
-  When(buildInRange(introFedEarthseed, introFedEarthseedRunSubQueries))
+  // spaceyBookishEarthseed = {
+  //   nodes: [...spacey.nodes, ...bookish.nodes, ...earthseed.nodes],
+  //   links: [...spacey.links, ...bookish.links, ...earthseed.links],
+  // }
+  
+  When(buildInRange(introFedEarthseed, introFedEarthseedRunQuery))
     .start(() => {
-      Graph.graphData(spaceyBookishEarthseed).recenter().clearHighlights()
+      Graph.graphData(earthseed.graph).recenter().clearHighlights()
     })
 
   When(introFedEarthseedRunQuery)
-    .start(() => {
-      graphql(earthseed.schema, earthseedQuery.textContent)
-    })
-
-  When(introFedEarthseedRunSubQueries)
-    .start(() => {
-      graphql(spacey.schema, spaceManualQuery.textContent,
+    .start(async () => {
+      await graphql(earthseed.schema, spaceManualQuery.textContent,
         {},
         {},
         { name: "sally" })
-      graphql(bookish.schema, bookishManualQuery.textContent,
-        {},
-        {},
-        { id: 0 })
+      graphql(earthseed.schema, earthseedQuery.textContent)
     })
 
-  When(buildInRange(introFedEarthseedOrbit, introFedEarthseedRunSubQueries))
+  When(buildInRange(introFedEarthseedOrbit, introFedEarthseedRunQuery))
     .withDuration(3[sec])
     .at(orbit())
 </script>

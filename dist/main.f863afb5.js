@@ -491,7 +491,7 @@ Graph.forceEngine('d3').numDimensions(3).nodeThreeObject(textObject).linkWidth(l
   x: 0,
   y: 0,
   z: 500
-}).showNavInfo(false);
+}).enableNavigationControls(true).showNavInfo(false);
 
 Graph.updateHighlight = function () {
   this.linkDirectionalParticles(this.linkDirectionalParticles());
@@ -503,7 +503,8 @@ Graph.updateHighlight = function () {
     for (const {
       sprite
     } of nodes) {
-      sprite?.baseColor.a(1).toString();
+      if (!sprite) continue;
+      sprite.color = sprite.baseColor.a(1).toString();
     }
 
     return;
@@ -583,7 +584,7 @@ function spinCam(graph = Graph, speed = SLOW) {
 
 Graph.onNodeClick(console.log);
 Graph.d3Force('charge')(-10);
-Graph.d3Force('link').distance(link => link.id.endsWith(':fed') ? 300 : 30); // Graph.d3Force('center')(5)
+Graph.d3Force('link').distance(link => link.rel === 'origin' ? 300 : 30); // Graph.d3Force('center')(5)
 
 (0, _letterbox.applyLetterbox)([16, 9], box => {
   Graph.width(box.width);

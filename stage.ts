@@ -100,14 +100,16 @@ Graph
   .linkDirectionalParticleWidth(1.5)
   .linkDirectionalParticleSpeed(0.005)
   .cameraPosition({ x: 0, y: 0, z: 500 })
+  .enableNavigationControls(true)
   .showNavInfo(false)
 
 Graph.updateHighlight = function() {
   this.linkDirectionalParticles(this.linkDirectionalParticles())
   const {nodes} = this.graphData()
-  if (!this.highlighted) {
+  if (!this.highlighted) {    
     for (const {sprite} of nodes) {
-      sprite?.baseColor.a(1).toString()
+      if (!sprite) continue
+      sprite.color = sprite.baseColor.a(1).toString()
     }
     return
   }
@@ -184,7 +186,7 @@ function spinCam(graph = Graph, speed = SLOW) {
  
 Graph.onNodeClick(console.log)
 Graph.d3Force('charge')(-10)
-;(Graph.d3Force('link') as any).distance((link: any) => link.id.endsWith(':fed') ? 300 : 30)
+;(Graph.d3Force('link') as any).distance((link: any) => link.rel === 'origin' ? 300 : 30)
 // Graph.d3Force('center')(5)
 
 applyLetterbox([16, 9], box => { Graph.width(box.width); Graph.height(box.height) });

@@ -20,6 +20,15 @@ body {
   justify-content: center;
   height: 100%;
 }
+* {
+  pointer-events: none;
+}
+#graph {
+  pointer-events: auto;
+}
+#graph * {
+  pointer-events: auto;
+}
 code {
   font-size: calc(var(--su) * 0.2);
 }
