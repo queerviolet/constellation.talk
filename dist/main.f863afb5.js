@@ -414,7 +414,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.orbit = orbit;
-exports.Atlas = exports.Graph = void 0;
+exports.Graph = void 0;
 
 var _letterbox = require("./letterbox");
 
@@ -448,8 +448,6 @@ const graphColors = {
   bookish: _colors.blue,
   earthseed: _colors.purple
 };
-const Atlas = {};
-exports.Atlas = Atlas;
 
 function textObject(node) {
   const graph = node.graph || 'default';
@@ -461,7 +459,7 @@ function textObject(node) {
     opacity: 0
   })); // add text sprite as child
 
-  const sprite = new _threeSpritetext.default(node.name);
+  const sprite = new _threeSpritetext.default(node.label);
   sprite.fontFace = 'Source Sans Pro';
   sprite.fontWeight = '600';
   sprite.padding = 1;
@@ -484,8 +482,8 @@ function textObject(node) {
   sprite.color = color.a(1).toString();
   sprite.baseColor = color;
   obj.add(sprite);
-  Atlas[node.id].three = obj;
-  Atlas[node.id].sprite = sprite;
+  node.three = obj;
+  node.sprite = sprite;
   return obj;
 }
 
@@ -497,19 +495,24 @@ Graph.forceEngine('d3').numDimensions(3).nodeThreeObject(textObject).linkWidth(l
 
 Graph.updateHighlight = function () {
   this.linkDirectionalParticles(this.linkDirectionalParticles());
+  const {
+    nodes
+  } = this.graphData();
 
   if (!this.highlighted) {
-    for (const id in Atlas) {
-      const sprite = Atlas[id].sprite;
-      if (!sprite) continue;
-      sprite.color = sprite.baseColor.a(1).toString();
+    for (const {
+      sprite
+    } of nodes) {
+      sprite?.baseColor.a(1).toString();
     }
 
     return;
   }
 
-  for (const id in Atlas) {
-    const sprite = Atlas[id].sprite;
+  for (const {
+    id,
+    sprite
+  } of nodes) {
     if (!sprite) continue;
     sprite.color = this.highlighted.has(id) ? sprite.baseColor.a(1).toString() : sprite.baseColor.a(0.2).toString();
   }
@@ -593,19 +596,21 @@ Graph.zoomToFit = function (...args) {
   ++this.isAutoZooming;
   ztf.apply(this, args);
   setTimeout(() => {
-    setTextSizeForDistance(this.camera().position.length());
+    this.setTextSizeForDistance();
     --this.isAutoZooming;
   }, args[0]);
   return this;
 };
 
-function setTextSizeForDistance(distance = 300, frames = 10) {
+Graph.setTextSizeForDistance = function (distance = this.camera().position.length(), frames = 10) {
   const items = [];
+  const {
+    nodes
+  } = this.graphData();
 
-  for (const id in Atlas) {
-    const {
-      sprite
-    } = Atlas[id];
+  for (const {
+    sprite
+  } of nodes) {
     if (!sprite) continue;
     const height = Math.max(sprite.baseTextHeight, sprite.baseTextHeight * distance / 800);
     const delta = height - sprite.textHeight;
@@ -617,6 +622,7 @@ function setTextSizeForDistance(distance = 300, frames = 10) {
 
   let count = 0;
   resize();
+  return this;
 
   function resize() {
     if (count++ < frames) requestAnimationFrame(resize);
@@ -628,7 +634,7 @@ function setTextSizeForDistance(distance = 300, frames = 10) {
       sprite.textHeight += delta;
     }
   }
-}
+};
 
 async function doRecenter(graph, ms = 600) {
   graph.zoomToFit(ms);
@@ -690,7 +696,6 @@ Object.assign(window, {
   THREE,
   orbit,
   Graph,
-  Atlas,
   blocks: embiggen(_blocks.default),
   addBloom,
   spinCam

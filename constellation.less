@@ -13,7 +13,7 @@
   .stage(0, 0, 16, 9);
   .fades();
 
-  display: flex;
+  display: none;
 
   > #whatsNextTxt {
     .stage(1, 1, 15, 8);
@@ -36,6 +36,7 @@
 
 .csExplode, .csEarlier {
   #explosion { filter: none; opacity: 1; }
+  #whatsNext { display: flex; }
 }
 
 .csWhatsNext,
@@ -55,9 +56,9 @@
 .csCompatibility
 {
   .csEarlier();
-  #whatsNext { opacity: 1; }
+  #whatsNext { display: flex; opacity: 1; }
 }
 
 .csEnd {
-  #explosion { opacity: 1; }
+  #explosion { display: flex; opacity: 1; }
 }

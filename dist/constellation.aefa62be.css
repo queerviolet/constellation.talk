@@ -114,7 +114,7 @@ build-note {
   right: auto;
   transition: opacity 1000ms;
   opacity: 0;
-  display: flex;
+  display: none;
 }
 #whatsNext > #whatsNextTxt {
   position: fixed;
@@ -140,6 +140,10 @@ build-note {
 .csEarlier #explosion {
   filter: none;
   opacity: 1;
+}
+.csExplode #whatsNext,
+.csEarlier #whatsNext {
+  display: flex;
 }
 .csWhatsNext #explosion,
 .csEvolution #explosion,
@@ -174,9 +178,28 @@ build-note {
 .csStitching #whatsNext,
 .csProject #whatsNext,
 .csCompatibility #whatsNext {
+  display: flex;
+}
+.csWhatsNext #whatsNext,
+.csEvolution #whatsNext,
+.csFaster #whatsNext,
+.csRust #whatsNext,
+.csParallelism #whatsNext,
+.csAheadOfTime #whatsNext,
+.csStronger #whatsNext,
+.csValidations #whatsNext,
+.csErrors #whatsNext,
+.csInsight #whatsNext,
+.csFlexiblier #whatsNext,
+.csMoreFlexible #whatsNext,
+.csStitching #whatsNext,
+.csProject #whatsNext,
+.csCompatibility #whatsNext {
+  display: flex;
   opacity: 1;
 }
 .csEnd #explosion {
+  display: flex;
   opacity: 1;
 }
 

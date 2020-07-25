@@ -19,6 +19,7 @@ type ForceGraph3D = ForceGraph3DInstance & {
   clearHighlights?(): ForceGraph3D
   recenter?(): ForceGraph3D
   updateHighlight?(): ForceGraph3D
+  setTextSizeForDistance?(distance?: number, frames?: number): ForceGraph3D
 }
 
 export const Graph: ForceGraph3D = ForceGraph3D({ controlType: 'orbit' })(graph)
@@ -31,14 +32,6 @@ const graphColors = {
   earthseed: purple,
 }
 
-export const Atlas: {
-  [id: string]: {
-    node?: any
-    link?: any
-    three?: THREE.Object3D
-    sprite?: SpriteTextExt
-  }
-} = {}
 
 type SpriteTextExt = SpriteText & {
   baseColor?: RGBA
@@ -56,7 +49,7 @@ function textObject(node: any) {
   );
 
   // add text sprite as child
-  const sprite: SpriteTextExt = new SpriteText(node.name);
+  const sprite: SpriteTextExt = new SpriteText(node.label);
   sprite.fontFace = 'Source Sans Pro';
   sprite.fontWeight = '600'
   sprite.padding = 1
@@ -79,8 +72,8 @@ function textObject(node: any) {
   sprite.baseColor = color
 
   obj.add(sprite)    
-  Atlas[node.id].three = obj
-  Atlas[node.id].sprite = sprite
+  node.three = obj
+  node.sprite = sprite
   return obj
 }
 
@@ -88,7 +81,7 @@ Graph
   .forceEngine('d3')
   .numDimensions(3)  
   .nodeThreeObject(textObject)
-  .linkWidth(link =>
+  .linkWidth((link: any) =>
     Graph.highlighted?.has(link.id)
       ? 5
       : 0.5
@@ -111,21 +104,19 @@ Graph
 
 Graph.updateHighlight = function() {
   this.linkDirectionalParticles(this.linkDirectionalParticles())
+  const {nodes} = this.graphData()
   if (!this.highlighted) {
-    for (const id in Atlas) {
-      const sprite = Atlas[id].sprite
-      if (!sprite) continue
-      sprite.color = sprite.baseColor.a(1).toString()
+    for (const {sprite} of nodes) {
+      sprite?.baseColor.a(1).toString()
     }
     return
   }
-  for (const id in Atlas) {
-    const sprite = Atlas[id].sprite
+  for (const {id, sprite} of nodes) {
     if (!sprite) continue
     sprite.color = this.highlighted.has(id)
       ? sprite.baseColor.a(1).toString()
       : sprite.baseColor.a(0.2).toString()
-  }      
+  }
   return this
 }
 
@@ -193,7 +184,7 @@ function spinCam(graph = Graph, speed = SLOW) {
  
 Graph.onNodeClick(console.log)
 Graph.d3Force('charge')(-10)
-Graph.d3Force('link').distance(link => link.id.endsWith(':fed') ? 300 : 30)
+;(Graph.d3Force('link') as any).distance((link: any) => link.id.endsWith(':fed') ? 300 : 30)
 // Graph.d3Force('center')(5)
 
 applyLetterbox([16, 9], box => { Graph.width(box.width); Graph.height(box.height) });
@@ -204,16 +195,16 @@ Graph.zoomToFit = function(...args: Parameters<ForceGraph3DInstance["zoomToFit"]
   ++this.isAutoZooming
   ztf.apply(this, args)
   setTimeout(() => {
-    setTextSizeForDistance(this.camera().position.length())
+    this.setTextSizeForDistance()
     --this.isAutoZooming
   }, args[0])
   return this
 }
 
-function setTextSizeForDistance(distance=300, frames = 10) {
+Graph.setTextSizeForDistance = function(distance=this.camera().position.length(), frames=10) {
   const items: any[] = []
-  for (const id in Atlas) {
-    const {sprite} = Atlas[id]
+  const {nodes} = this.graphData()
+  for (const {sprite} of nodes) {
     if (!sprite) continue
     const height = Math.max(sprite.baseTextHeight, sprite.baseTextHeight * distance / 800)
     const delta = height - sprite.textHeight
@@ -221,6 +212,7 @@ function setTextSizeForDistance(distance=300, frames = 10) {
   }
   let count = 0
   resize()
+  return this
 
   function resize() {
     if (count++ < frames) requestAnimationFrame(resize)
@@ -281,5 +273,5 @@ function embiggen(graphData: { nodes: any[], links: any[] }) {
 }
 
 Object.assign(window as any, {
-  ForceGraph3D, THREE, orbit, Graph, Atlas, blocks: embiggen(blocks), addBloom, spinCam
+  ForceGraph3D, THREE, orbit, Graph, blocks: embiggen(blocks), addBloom, spinCam
 })

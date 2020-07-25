@@ -1,10 +1,11 @@
 <!doctype html>
 <meta charset="utf-8"/>
 
-<title>Learning from Machines</title>
+<title>The Future of Federation</title>
 <link rel=stylesheet href=base.less>
 <link rel=stylesheet href=intro.less>
 <link rel=stylesheet href=constellation.less>
+<link rel=stylesheet href=feat.less>
 <script src=elements.ts></script>
 
 <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600;700" rel="stylesheet">
@@ -12,8 +13,8 @@
 
 <div id=backdrop></div>
 <div id=graph></div>
+<div id=explosion></div>
 
-<!-- <script src=stage.ts></script> -->
 <script src=main.js></script>
 
 <style>
@@ -144,9 +145,8 @@ first, let's look at the state of graphql and federation today.
 
   When(introSpaceyRunQuery)
     .start(() => {
-      Graph.highlight('spacey.Query')
       graphql(spacey.schema, spaceyQuery.innerText)
-    })
+    }).end(() => Graph.clearHighlights())
 </script>
 
 <build-note id=introBookishGraph>
@@ -378,7 +378,6 @@ first, let's look at the state of graphql and federation today.
   what if we could have both? the verifiability of federation with the flexibility of schema stitching?
 </build-note>
 
-<div id=explosion></div>
 <script>
   splode = addBloom(ForceGraph3D()(explosion))
     .nodeRelSize(1)
@@ -465,11 +464,11 @@ first, let's look at the state of graphql and federation today.
 </build-note>
 
 <script>
-  When(buildInRange(csExplode, csEnd))
+  When(buildInRange(csExplode, {order: Infinity}))
     .start(() => splode.resumeAnimation().graphData(blocks).zoomToFit())
     .end(() => splode.pauseAnimation())
 
-  When(buildInRange(csExplode, csEnd))
+  When(buildInRange(csExplode, {order: Infinity}))
     .withDuration(20[sec])
     .at(orbit(splode))
 
@@ -506,6 +505,16 @@ first, let's look at the state of graphql and federation today.
     })
     .end(() => {
       whatsNextTxt.text = ''
+    })
+</script>
+
+<build-note id=featBooks>
+  let's go back and look at our books schema
+</build-note>
+
+<script>
+  When(featBooks)
+    .start(() => {
     })
 </script>
 
