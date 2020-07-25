@@ -574,13 +574,34 @@ Graph.zoomToFit = function (...args) {
   return this;
 };
 
-function setTextSizeForDistance(distance = 300) {
+function setTextSizeForDistance(distance = 300, frames = 10) {
+  const items = [];
+
   for (const id in Atlas) {
     const {
       sprite
     } = Atlas[id];
     if (!sprite) continue;
-    sprite.textHeight = Math.max(sprite.baseTextHeight, sprite.baseTextHeight * distance / 600);
+    const height = Math.max(sprite.baseTextHeight, sprite.baseTextHeight * distance / 800);
+    const delta = height - sprite.textHeight;
+    if (Math.abs(delta) > 0.001) items.push({
+      sprite,
+      delta: delta / frames
+    });
+  }
+
+  let count = 0;
+  resize();
+
+  function resize() {
+    if (count++ < frames) requestAnimationFrame(resize);
+
+    for (const {
+      sprite,
+      delta
+    } of items) {
+      sprite.textHeight += delta;
+    }
   }
 }
 

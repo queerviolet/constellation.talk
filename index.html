@@ -135,7 +135,7 @@ first, let's look at the state of graphql and federation today.
   When(buildInRange(introSpaceyGraph, introSpaceyRunQuery))
     .start(() => Graph.graphData(spacey).clearHighlights().recenter())
 
-  When(buildInRange(introSpaceyGraphOrbit, introBookishSchema))
+  When(buildInRange(introSpaceyGraphOrbit, introSpaceyRunQuery))
     .withDuration(3[sec])
     .at(orbit())
 
@@ -156,7 +156,7 @@ first, let's look at the state of graphql and federation today.
 <script>
   bookish = parseToGraph('bookish', bookishSchema.textContent)
 
-  When(buildInRange(introBookishGraph, introBookishGraphOrbit))
+  When(buildInRange(introBookishSchema, introBookishGraphOrbit))
     .start(() => {
       Graph.graphData(bookish).recenter()
         .clearHighlights()
