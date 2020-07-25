@@ -4,6 +4,8 @@ global.Timeline = Timeline
 // import Builds from './builds'
 
 // global.Builds = Builds
+import {When, For, buildInRange, runAnimatorStep, always, match, lerp, every, sec, any} from './when'
+
 import './stage.ts'
 
 import hljs from 'highlight.js'
@@ -11,12 +13,6 @@ import hljsGraphQl from 'highlightjs-graphql'
 import 'highlight.js/styles/atelier-cave-dark.css'
 hljsGraphQl(hljs)
 hljs.initHighlightingOnLoad()
-
-import {When, For, buildInRange, runAnimatorStep, always, match, lerp, every, sec, any} from './when'
-Object.assign(global, {When, For, buildInRange, always, every, sec, lerp, any})
-
-import './type-writer'
-import './seek-able'
 
 // import './fire'
 

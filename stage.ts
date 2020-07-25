@@ -45,48 +45,49 @@ type SpriteTextExt = SpriteText & {
   baseTextHeight?: number
 }
 
+function textObject(node: any) {
+  const graph = node.graph || 'default'
+  const palette = graphColors[graph] || yellow  
+
+  // use a sphere as a drag handle
+  const obj = new THREE.Mesh(
+    new THREE.SphereGeometry(10),
+    new THREE.MeshBasicMaterial({ depthWrite: false, transparent: true, opacity: 0 })
+  );
+
+  // add text sprite as child
+  const sprite: SpriteTextExt = new SpriteText(node.name);
+  sprite.fontFace = 'Source Sans Pro';
+  sprite.fontWeight = '600'
+  sprite.padding = 1
+  sprite.material.depthWrite = false
+  sprite.material.blending = THREE.AdditiveBlending
+
+  let color
+  if (node.isRoot) {
+    color = palette.lightest
+    sprite.baseTextHeight = sprite.textHeight = 12
+  } else if (node.isField) {
+    color = node.isScalar ? palette.dark : palette.base
+    sprite.baseTextHeight = sprite.textHeight = 8      
+    sprite.fontWeight = '700'
+  } else {
+    color = palette.light
+    sprite.baseTextHeight = sprite.textHeight = 10
+  }
+  sprite.color = color.a(1).toString()
+  sprite.baseColor = color
+
+  obj.add(sprite)    
+  Atlas[node.id].three = obj
+  Atlas[node.id].sprite = sprite
+  return obj
+}
+
 Graph
   .forceEngine('d3')
   .numDimensions(3)  
-  .nodeThreeObject((node: any) => {
-    const graph = node.graph || 'default'
-    const palette
-     = graphColors[graph] || yellow
-
-    // use a sphere as a drag handle
-    const obj = new THREE.Mesh(
-      new THREE.SphereGeometry(10),
-      new THREE.MeshBasicMaterial({ depthWrite: false, transparent: true, opacity: 0 })
-    );
-
-    // add text sprite as child
-    const sprite: SpriteTextExt = new SpriteText(node.name);
-    sprite.fontFace = 'Source Sans Pro';
-    sprite.fontWeight = '600'
-    sprite.padding = 1
-    sprite.material.depthWrite = false
-    sprite.material.blending = THREE.AdditiveBlending
-
-    let color
-    if (node.isRoot) {
-      color = palette.lightest
-      sprite.baseTextHeight = sprite.textHeight = 12
-    } else if (node.isField) {
-      color = node.isScalar ? palette.dark : palette.base
-      sprite.baseTextHeight = sprite.textHeight = 8      
-      sprite.fontWeight = '700'
-    } else {
-      color = palette.light
-      sprite.baseTextHeight = sprite.textHeight = 10
-    }
-    sprite.color = color.a(1).toString()
-    sprite.baseColor = color
-
-    obj.add(sprite)    
-    Atlas[node.id].three = obj
-    Atlas[node.id].sprite = sprite
-    return obj
-  })
+  .nodeThreeObject(textObject)
   .linkWidth(link =>
     Graph.highlighted?.has(link.id)
       ? 5
@@ -106,6 +107,7 @@ Graph
   .linkDirectionalParticleWidth(1.5)
   .linkDirectionalParticleSpeed(0.005)
   .cameraPosition({ x: 0, y: 0, z: 500 })
+  .showNavInfo(false)
 
 Graph.updateHighlight = function() {
   this.linkDirectionalParticles(this.linkDirectionalParticles())
@@ -148,27 +150,45 @@ Graph.clearHighlights = function() {
   return this
 }
 
-const bloomPass = new (UnrealBloomPass as any)();
-bloomPass.strength = 1;
-bloomPass.radius = 1;
-bloomPass.threshold = 0.1;
-Graph.postProcessingComposer().addPass(bloomPass);
+
+function addBloom(graph: ForceGraph3D) {
+  const bloomPass = new (UnrealBloomPass as any)();
+  bloomPass.strength = 1;
+  bloomPass.radius = 1;
+  bloomPass.threshold = 0.1;
+  graph.postProcessingComposer().addPass(bloomPass);
+  return graph
+}
+
+addBloom(Graph)
 
 const SLOW = 1
 
 const Y = new THREE.Vector3(0, 1, 0)
-export function orbit(speed = SLOW, axis = Y) {
+export function orbit(graph = Graph, speed = SLOW, axis = Y) {
   return t => {
-    if (Graph.isAutoZooming) return
+    if (graph.isAutoZooming) return
     let angle = t * speed
-    let distance = Graph.camera().position.length()
-    Graph.cameraPosition({
+    let distance = graph.camera().position.length()
+    graph.cameraPosition({
       x: distance * Math.sin(angle),
       z: distance * Math.cos(angle),
     })
   }
 }
 
+function spinCam(graph = Graph, speed = SLOW) {
+  return t => {
+    let angle = t * speed
+    graph.cameraPosition({
+      x: 0, y: 0, z: 100,
+    }, {
+      x: Math.sin(angle),
+      y: 0,
+      z: Math.cos(angle) + 100,
+    })
+  }
+}
 
  
 Graph.onNodeClick(console.log)
@@ -242,7 +262,24 @@ Graph.recenter = function(ms = 600) {
   return this
 }
 
+import blocks from './blocks.json'
+
+function embiggen(graphData: { nodes: any[], links: any[] }) {
+  let tag = 'x'
+  const nodes = graphData.nodes.map(n => ({
+    ...n, id: tag + n.id
+  }))
+  const links = graphData.links.map(l => ({
+    ...l,
+    source: tag + l.source,
+    target: tag + l.target,
+  }))
+  return {
+    nodes: graphData.nodes.concat(nodes),
+    links: graphData.links.concat(links)
+  }
+}
 
 Object.assign(window as any, {
-  ForceGraph3D, THREE, orbit, Graph, Atlas
+  ForceGraph3D, THREE, orbit, Graph, Atlas, blocks: embiggen(blocks), addBloom, spinCam
 })

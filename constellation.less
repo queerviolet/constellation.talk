@@ -1,0 +1,59 @@
+@import "base.less";
+@import "colors.less";
+
+// -- stage setup --
+#explosion {
+  .stage(0, 0, 16, 9);
+  transition: filter 1000ms, opacity 1000ms;
+  filter: blur(20px);
+  opacity: 0;
+}
+
+#whatsNext {
+  .stage(0, 0, 16, 9);
+  .fades();
+
+  display: flex;
+
+  > #whatsNextTxt {
+    .stage(1, 1, 15, 8);
+    display: block;
+    color: @yellow-base;
+    font-family: 'Source Sans Pro';
+    font-size: calc(0.8 * var(--su));
+    --typewriter-typing-rate: 30;
+    --typewriter-cursor-color: @indigo-light;
+    text-shadow: calc(0.1 * var(--su)) calc(0.1 * var(--su)) calc(0.2 * var(--su)) black;
+    white-space: pre;
+
+    &:first-line {
+      font-size: calc(0.9 * var(--su));
+    }
+  }
+}
+
+// -- builds --
+
+.csExplode, .csEarlier {
+  #explosion { filter: none; opacity: 1; }
+}
+
+.csWhatsNext,
+.csEvolution,
+.csFaster,
+.csRust,
+.csParallelism,
+.csAheadOfTime,
+.csStronger,
+.csValidations,
+.csErrors,
+.csInsight,
+.csFlexiblier,
+.csMoreFlexible,
+.csStitching,
+.csProject,
+.csCompatibility
+{
+  .csEarlier();
+  #whatsNext { opacity: 1; }
+}

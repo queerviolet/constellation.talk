@@ -1,6 +1,8 @@
 import {sleep} from './time'
 import {graphql, buildSchema, isObjectType, isScalarType, isNonNullType, isListType, GraphQLObjectType, GraphQLField, GraphQLSchema} from 'graphql'
 import {Graph, Atlas} from './stage'
+import swapi from './swapi'
+import artsy from './artsy'
 
 function ofType(type: any) {
   while (isListType(type) || isNonNullType(type)) type = type.ofType;
@@ -68,6 +70,7 @@ export function parseToGraph(ns: string, source: string | GraphQLSchema) {
       return existing
     }
     
+    console.log('adding node', node.id)
     Atlas[node.id] = { node }
     nodes.push(node)
     return node

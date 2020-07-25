@@ -145,6 +145,10 @@ export const runAnimatorStep = (ts, currentBuild, prevBuild) => {
 export const match = Symbol('when/match')
 Object.defineProperty(Function.prototype, match, { get() { return this } })
 
+HTMLElement.prototype[match] = function(_, current) {
+  return current === this
+}
+
 export const buildInRange = (from, to) =>
   (ts, current) =>
     current &&

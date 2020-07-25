@@ -412,6 +412,8 @@ function hmrAcceptRun(bundle, id) {
 
 var _timeline = _interopRequireDefault(require("./timeline"));
 
+var _when = require("./when");
+
 require("./stage.ts");
 
 var _highlight = _interopRequireDefault(require("highlight.js"));
@@ -419,12 +421,6 @@ var _highlight = _interopRequireDefault(require("highlight.js"));
 var _highlightjsGraphql = _interopRequireDefault(require("highlightjs-graphql"));
 
 require("highlight.js/styles/atelier-cave-dark.css");
-
-var _when = require("./when");
-
-require("./type-writer");
-
-require("./seek-able");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -434,20 +430,9 @@ global.Timeline = _timeline.default; // import Builds from './builds'
 
 (0, _highlightjsGraphql.default)(_highlight.default);
 
-_highlight.default.initHighlightingOnLoad();
+_highlight.default.initHighlightingOnLoad(); // import './fire'
 
-Object.assign(global, {
-  When: _when.When,
-  For: _when.For,
-  buildInRange: _when.buildInRange,
-  always: _when.always,
-  every: _when.every,
-  sec: _when.sec,
-  lerp: _when.lerp,
-  any: _when.any
-});
 
-// import './fire'
 function collectBuilds() {
   const all = Array.from(document.getElementsByTagName('build-note'));
   console.log('BUILDS=', all);
@@ -702,7 +687,7 @@ addEventListener('keydown', onKey); // addEventListener('mousedown', () => curre
 // setCurrentBuild(currentBuild.nextBuild))
 
 addEventListener('touchstart', () => currentBuild && currentBuild.nextBuild && setCurrentBuild(currentBuild.nextBuild));
-},{"./timeline":"479df63fcf01fa02e81ad48d6eca331a","./stage.ts":"decff87b80d38dbe8c94f3b323cea37d","highlight.js":"461f4b23230495a78ada51375a2cdfdd","highlightjs-graphql":"bb1f84bf95cb04ac4d3ac5e3acdcf0c6","highlight.js/styles/atelier-cave-dark.css":"59b7bd8f7d5b913cc0e89b3b22649c91","./when":"36610a9d3b60041d5afed0d0c46dfc02","./type-writer":"b2f3c44cf2b5ebd30543f98ad15b4f68","./seek-able":"6ff132b19e70d3202dc4a72ecdf9d59b"}],"479df63fcf01fa02e81ad48d6eca331a":[function(require,module,exports) {
+},{"./timeline":"479df63fcf01fa02e81ad48d6eca331a","./when":"36610a9d3b60041d5afed0d0c46dfc02","./stage.ts":"decff87b80d38dbe8c94f3b323cea37d","highlight.js":"461f4b23230495a78ada51375a2cdfdd","highlightjs-graphql":"bb1f84bf95cb04ac4d3ac5e3acdcf0c6","highlight.js/styles/atelier-cave-dark.css":"59b7bd8f7d5b913cc0e89b3b22649c91"}],"479df63fcf01fa02e81ad48d6eca331a":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -953,6 +938,231 @@ function midCareful(v1,v2,mids){
   return mid;
 }
 
+},{}],"36610a9d3b60041d5afed0d0c46dfc02":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.always = always;
+exports.When = When;
+exports.addAnimator = addAnimator;
+exports.removeAnimator = removeAnimator;
+exports.any = exports.buildInRange = exports.match = exports.runAnimatorStep = exports.lerp = exports.sec = exports.every = exports.For = exports.unattached = exports.defaultContext = void 0;
+var global = arguments[3];
+const defaultContext = {
+  add: addAnimator,
+  remove: removeAnimator
+};
+exports.defaultContext = defaultContext;
+const unattached = {
+  add: _ => {},
+  remove: _ => {}
+};
+exports.unattached = unattached;
+
+function always() {
+  return true;
+}
+
+function When(condition = always, ctx = defaultContext) {
+  if (new.target == null) return new When(condition, ctx);
+  this.condition = condition;
+  this.running = false;
+  this._handlers = {
+    start: [],
+    frame: [],
+    at: [],
+    end: [],
+    changed: []
+  };
+
+  this._resetDone();
+
+  this._ctx = ctx;
+  ctx.add && ctx.add(this);
+}
+
+const fire = type => ({
+  [type](cb) {
+    this._handlers[type].push(cb);
+
+    return this;
+  },
+
+  [`_fire_${type}`](ts, currentBuild, lastBuild) {
+    const cbs = this._handlers[type];
+    const count = cbs.length;
+
+    for (let i = 0; i !== count; ++i) cbs[i].apply(this, [ts, currentBuild, lastBuild]);
+  }
+
+});
+
+Object.assign(When.prototype, ...['start', 'frame', 'at', 'end', 'changed'].map(fire));
+
+When.prototype._resetDone = function () {
+  this.done = new Promise(_ => this._resolveDone = _);
+};
+
+When.prototype.withName = function (name) {
+  this.name = name;
+  return this;
+};
+
+When.prototype.withDuration = function (duration) {
+  this.duration = duration;
+  return this;
+};
+
+When.prototype.remove = function () {
+  this._ctx.remove(this);
+
+  return this;
+};
+
+When.prototype.step = function (ts, currentBuild, lastBuild) {
+  const shouldRun = this.condition[match](ts, currentBuild, lastBuild);
+
+  if (shouldRun && !this.running) {
+    this._fire_start(ts, currentBuild, lastBuild);
+
+    this.startedAt = ts;
+    this.running = true;
+  }
+
+  if (!shouldRun && this.running) {
+    this._fire_end(ts, currentBuild, lastBuild);
+
+    this.endedAt = ts;
+    this.running = false;
+
+    this._resolveDone(this);
+
+    this._resetDone();
+  }
+
+  if (this.running) {
+    if (currentBuild !== lastBuild) this._fire_changed(ts, currentBuild, lastBuild);
+
+    this._fire_frame(ts, currentBuild, lastBuild);
+
+    if (typeof this.duration === 'number') {
+      const t = (ts - this.startedAt) / this.duration;
+      this.t = t;
+
+      this._fire_at(t, currentBuild, lastBuild);
+    }
+  }
+};
+
+const For = (duration, ctx = defaultContext) => {
+  let endTime;
+  const anim = When(ts => !anim.running || ts < endTime, ctx).withDuration(duration).start(ts => endTime = ts + duration).end(() => ctx.remove(anim));
+  return anim;
+};
+
+exports.For = For;
+
+const every = interval => {
+  let lastTick = null;
+  return cb => function (ts, currentBuild, lastBuild) {
+    const currentTick = Math.floor((ts - this.startedAt) / interval);
+    if (currentTick !== lastTick) cb.apply(this, [ts, currentTick, currentBuild, lastBuild]);
+    lastTick = currentTick;
+  };
+};
+/****** Unit utilities ******/
+
+
+exports.every = every;
+
+const sec = seconds => 1000 * seconds;
+
+exports.sec = sec;
+sec.symbol = Symbol('seconds');
+
+sec[Symbol.toPrimitive] = () => sec.symbol;
+
+Object.defineProperty(Number.prototype, sec, {
+  get() {
+    return sec(this.valueOf());
+  }
+
+});
+Object.defineProperty(String.prototype, sec, {
+  get() {
+    return sec(+this);
+  }
+
+});
+/****** Animation utils ******/
+
+const lerp = (from, to, map = _ => _) => {
+  const delta = to - from;
+  return t => map(from + t * delta);
+};
+/****** Animator framework ******/
+
+
+exports.lerp = lerp;
+global.__animators = global.__animators || [];
+
+global.__cascadeDebug = (debug = true) => debug ? log = console : log = debuggingOff;
+
+const debuggingOff = {
+  log() {},
+
+  table() {}
+
+};
+let log = debuggingOff;
+
+function addAnimator(animator) {
+  global.__animators.push(animator);
+
+  log.log('added animator', animator);
+  log.table(global.__animators);
+}
+
+function removeAnimator(animator) {
+  const animators = global.__animators;
+  const idx = animators.indexOf(animator);
+  if (idx >= 0) animators.splice(idx, 1);
+
+  animator._resolveDone();
+}
+
+const runAnimatorStep = (ts, currentBuild, prevBuild) => {
+  const animators = global.__animators;
+  let i = animators.length;
+
+  while (i-- > 0) animators[i].step(ts, currentBuild, prevBuild);
+};
+/****** Condition helpers ******/
+
+
+exports.runAnimatorStep = runAnimatorStep;
+const match = Symbol('when/match');
+exports.match = match;
+Object.defineProperty(Function.prototype, match, {
+  get() {
+    return this;
+  }
+
+});
+
+HTMLElement.prototype[match] = function (_, current) {
+  return current === this;
+};
+
+const buildInRange = (from, to) => (ts, current) => current && current.order >= from.order && current.order <= to.order;
+
+exports.buildInRange = buildInRange;
+
+const any = (...matchers) => (ts, current, next) => matchers.some(m => m[match](ts, current, next));
+
+exports.any = any;
 },{}],"461f4b23230495a78ada51375a2cdfdd":[function(require,module,exports) {
 var hljs = require('./core');
 
@@ -29380,402 +29590,6 @@ module.exports = function(hljs) {
 
 module.exports.definer = hljsDefineGraphQL;
 
-},{}],"59b7bd8f7d5b913cc0e89b3b22649c91":[function() {},{}],"36610a9d3b60041d5afed0d0c46dfc02":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.always = always;
-exports.When = When;
-exports.addAnimator = addAnimator;
-exports.removeAnimator = removeAnimator;
-exports.any = exports.buildInRange = exports.match = exports.runAnimatorStep = exports.lerp = exports.sec = exports.every = exports.For = exports.unattached = exports.defaultContext = void 0;
-var global = arguments[3];
-const defaultContext = {
-  add: addAnimator,
-  remove: removeAnimator
-};
-exports.defaultContext = defaultContext;
-const unattached = {
-  add: _ => {},
-  remove: _ => {}
-};
-exports.unattached = unattached;
-
-function always() {
-  return true;
-}
-
-function When(condition = always, ctx = defaultContext) {
-  if (new.target == null) return new When(condition, ctx);
-  this.condition = condition;
-  this.running = false;
-  this._handlers = {
-    start: [],
-    frame: [],
-    at: [],
-    end: [],
-    changed: []
-  };
-
-  this._resetDone();
-
-  this._ctx = ctx;
-  ctx.add && ctx.add(this);
-}
-
-const fire = type => ({
-  [type](cb) {
-    this._handlers[type].push(cb);
-
-    return this;
-  },
-
-  [`_fire_${type}`](ts, currentBuild, lastBuild) {
-    const cbs = this._handlers[type];
-    const count = cbs.length;
-
-    for (let i = 0; i !== count; ++i) cbs[i].apply(this, [ts, currentBuild, lastBuild]);
-  }
-
-});
-
-Object.assign(When.prototype, ...['start', 'frame', 'at', 'end', 'changed'].map(fire));
-
-When.prototype._resetDone = function () {
-  this.done = new Promise(_ => this._resolveDone = _);
-};
-
-When.prototype.withName = function (name) {
-  this.name = name;
-  return this;
-};
-
-When.prototype.withDuration = function (duration) {
-  this.duration = duration;
-  return this;
-};
-
-When.prototype.remove = function () {
-  this._ctx.remove(this);
-
-  return this;
-};
-
-When.prototype.step = function (ts, currentBuild, lastBuild) {
-  const shouldRun = this.condition[match](ts, currentBuild, lastBuild);
-
-  if (shouldRun && !this.running) {
-    this._fire_start(ts, currentBuild, lastBuild);
-
-    this.startedAt = ts;
-    this.running = true;
-  }
-
-  if (!shouldRun && this.running) {
-    this._fire_end(ts, currentBuild, lastBuild);
-
-    this.endedAt = ts;
-    this.running = false;
-
-    this._resolveDone(this);
-
-    this._resetDone();
-  }
-
-  if (this.running) {
-    if (currentBuild !== lastBuild) this._fire_changed(ts, currentBuild, lastBuild);
-
-    this._fire_frame(ts, currentBuild, lastBuild);
-
-    if (typeof this.duration === 'number') {
-      const t = (ts - this.startedAt) / this.duration;
-      this.t = t;
-
-      this._fire_at(t, currentBuild, lastBuild);
-    }
-  }
-};
-
-const For = (duration, ctx = defaultContext) => {
-  let endTime;
-  const anim = When(ts => !anim.running || ts < endTime, ctx).withDuration(duration).start(ts => endTime = ts + duration).end(() => ctx.remove(anim));
-  return anim;
-};
-
-exports.For = For;
-
-const every = interval => {
-  let lastTick = null;
-  return cb => function (ts, currentBuild, lastBuild) {
-    const currentTick = Math.floor((ts - this.startedAt) / interval);
-    if (currentTick !== lastTick) cb.apply(this, [ts, currentTick, currentBuild, lastBuild]);
-    lastTick = currentTick;
-  };
-};
-/****** Unit utilities ******/
-
-
-exports.every = every;
-
-const sec = seconds => 1000 * seconds;
-
-exports.sec = sec;
-sec.symbol = Symbol('seconds');
-
-sec[Symbol.toPrimitive] = () => sec.symbol;
-
-Object.defineProperty(Number.prototype, sec, {
-  get() {
-    return sec(this.valueOf());
-  }
-
-});
-Object.defineProperty(String.prototype, sec, {
-  get() {
-    return sec(+this);
-  }
-
-});
-/****** Animation utils ******/
-
-const lerp = (from, to, map = _ => _) => {
-  const delta = to - from;
-  return t => map(from + t * delta);
-};
-/****** Animator framework ******/
-
-
-exports.lerp = lerp;
-global.__animators = global.__animators || [];
-
-global.__cascadeDebug = (debug = true) => debug ? log = console : log = debuggingOff;
-
-const debuggingOff = {
-  log() {},
-
-  table() {}
-
-};
-let log = debuggingOff;
-
-function addAnimator(animator) {
-  global.__animators.push(animator);
-
-  log.log('added animator', animator);
-  log.table(global.__animators);
-}
-
-function removeAnimator(animator) {
-  const animators = global.__animators;
-  const idx = animators.indexOf(animator);
-  if (idx >= 0) animators.splice(idx, 1);
-
-  animator._resolveDone();
-}
-
-const runAnimatorStep = (ts, currentBuild, prevBuild) => {
-  const animators = global.__animators;
-  let i = animators.length;
-
-  while (i-- > 0) animators[i].step(ts, currentBuild, prevBuild);
-};
-/****** Condition helpers ******/
-
-
-exports.runAnimatorStep = runAnimatorStep;
-const match = Symbol('when/match');
-exports.match = match;
-Object.defineProperty(Function.prototype, match, {
-  get() {
-    return this;
-  }
-
-});
-
-const buildInRange = (from, to) => (ts, current) => current && current.order >= from.order && current.order <= to.order;
-
-exports.buildInRange = buildInRange;
-
-const any = (...matchers) => (ts, current, next) => matchers.some(m => m[match](ts, current, next));
-
-exports.any = any;
-},{}],"b2f3c44cf2b5ebd30543f98ad15b4f68":[function(require,module,exports) {
-"use strict";
-
-var _when = require("./when");
-
-const {
-  ceil,
-  floor
-} = Math;
-
-class TypeWriter extends HTMLElement {
-  static get observedAttributes() {
-    return ['text'];
-  }
-
-  constructor() {
-    super();
-    const shadow = this.attachShadow({
-      mode: 'open'
-    });
-    const text = document.createTextNode('');
-    const cursor = document.createElement('span');
-    const style = document.createElement('style');
-    style.textContent = TypeWriter.style;
-    cursor.className = 'blinking cursor';
-    shadow.appendChild(style);
-    shadow.appendChild(text);
-    shadow.appendChild(cursor);
-    this.cursor = cursor;
-    this.textNode = text;
-    this.currentTargetText = '';
-  }
-
-  type(input, rate = this.typingRate) {
-    const {
-      textNode: text
-    } = this;
-    const startText = text.textContent;
-    if (this.anim) this.anim.remove();
-    return this.anim = (0, _when.For)(input.length[_when.sec] / rate).withName('typing').start(() => this.cursor.classList.remove('blinking')).at(t => text.textContent = startText + input.substr(0, ceil(t * input.length))).end(() => {
-      this.cursor.classList.add('blinking');
-      text.textContent = startText + input;
-    });
-  }
-
-  erase(count = this.textNode.textContent.length, rate = this.erasingRate) {
-    const {
-      textNode: text
-    } = this;
-    const startText = text.textContent;
-    const length = (0, _when.lerp)(startText.length, startText.length - count);
-    if (this.anim) this.anim.remove();
-    return this.anim = (0, _when.For)(count[_when.sec] / rate).withName('erasing').start(() => this.cursor.classList.remove('blinking')).at(t => text.textContent = startText.substr(0, floor(length(t)))).end(() => {
-      text.textContent = startText.substr(0, startText.length - count);
-      this.cursor.classList.add('blinking');
-    });
-  }
-
-  async attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'text') this.setText(newValue);
-  }
-
-  set text(newText) {
-    this.setText(newText);
-  }
-
-  get text() {
-    return this.textNode.textContent;
-  }
-
-  async setText(newText) {
-    const {
-      textNode
-    } = this;
-    if (this.currentTargetText === newText) return;
-    this.currentTargetText = newText;
-    const currentText = this.text;
-    const prefixLength = commonPrefix(currentText, newText);
-    const delta = currentText.length - prefixLength;
-    if (delta) await this.erase(delta).done;
-    this.type(newText.substr(prefixLength));
-  }
-
-  get typingRate() {
-    return +getComputedStyle(this).getPropertyValue('--typewriter-typing-rate') || 32;
-  }
-
-  get erasingRate() {
-    return +getComputedStyle(this).getPropertyValue('--typewriter-erasing-rate') || 60;
-  }
-
-}
-
-const commonPrefix = (a, b) => {
-  for (let i = 0; i != a.length; ++i) {
-    if (a[i] !== b[i]) return i;
-  }
-
-  return a.length;
-};
-
-TypeWriter.style = `
-.cursor {
-  display: inline-block;
-  background: var(--typewriter-cursor-color);
-  width: 2px;
-  height: 1.2em;
-  position: relative;
-  top: 0.2em;
-}
-
-.cursor.blinking {
-  animation-name: blink;
-  animation-duration: var(--typewriter-cursor-blink-rate);
-  animation-iteration-count: infinite;
-}
-
-@keyframes blink {
-  0% { opacity: 1; }
-  50% { opacity: 1; }
-  60% { opacity: 0; }
-  90% { opacity: 0; }
-  100% { opacity: 1; }
-}
-`;
-customElements.define('type-writer', TypeWriter);
-if (module.hot) module.hot.accept(() => false);
-},{"./when":"36610a9d3b60041d5afed0d0c46dfc02"}],"6ff132b19e70d3202dc4a72ecdf9d59b":[function(require,module,exports) {
-"use strict";
-
-var _when = require("./when");
-
-const Seekable = MediaBase => class SeekAble extends MediaBase {
-  seekTo({
-    duration: seekDuration = 1,
-    time = this.currentTime,
-    playbackRate = this.playbackRate,
-    paused = this.paused
-  }) {
-    if (this.anim) {
-      this.anim.remove();
-      this.anim = null;
-    }
-
-    if (!seekDuration || time < this.currentTime) this.currentTime = time;
-
-    const setFinalState = () => {
-      this.currentTime = time;
-      this.playbackRate = playbackRate;
-      if (typeof paused !== 'undefined') paused ? this.pause() : this.play();
-    };
-
-    if (seekDuration && this.currentTime !== time) {
-      if (this.paused) this.play();
-      let endTime = null;
-      const duration = seekDuration[_when.sec];
-      return this.anim = (0, _when.For)(seekDuration[_when.sec]).withName('seekVideo').start(ts => endTime = ts + duration).frame((0, _when.every)(0.5[_when.sec])(ts => {
-        const remaining = endTime - ts;
-        const delta = (time - this.currentTime)[_when.sec];
-        const targetRate = Math.min(Math.max(delta / remaining, 0.1), 5);
-        this.playbackRate = targetRate;
-      })).end(setFinalState);
-    }
-
-    setFinalState();
-  }
-
-};
-
-customElements.define('seekable-video', Seekable(HTMLVideoElement), {
-  extends: 'video'
-});
-customElements.define('seekable-audio', Seekable(HTMLAudioElement), {
-  extends: 'audio'
-});
-},{"./when":"36610a9d3b60041d5afed0d0c46dfc02"}]},{},["9e40b5d38ce112e2d5051ffbda3716de","aa97c85f9dce1163dc0f1b0575ce0e5f"], null)
+},{}],"59b7bd8f7d5b913cc0e89b3b22649c91":[function() {},{}]},{},["9e40b5d38ce112e2d5051ffbda3716de","aa97c85f9dce1163dc0f1b0575ce0e5f"], null)
 
 //# sourceMappingURL=main.7f456301.js.map

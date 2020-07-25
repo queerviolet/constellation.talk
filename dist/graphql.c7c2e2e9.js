@@ -502,6 +502,7 @@ function parseToGraph(ns, source) {
       return existing;
     }
 
+    console.log('adding node', node.id);
     _stage.Atlas[node.id] = {
       node
     };

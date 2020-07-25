@@ -58,8 +58,8 @@ h1 {
     calc(var(--letterbox-top) + @top * var(--su)),
     calc(var(--letterbox-left) + @left * var(--su)),
     auto,
-    calc(var(--letterbox-width) - @width * var(--su)),
-    calc(var(--letterbox-height) - @height * var(--su)),
+    calc(@width * var(--su)),
+    calc(@height * var(--su)),
     auto
     )
 }

@@ -4,6 +4,9 @@
 <title>Learning from Machines</title>
 <link rel=stylesheet href=base.less>
 <link rel=stylesheet href=intro.less>
+<link rel=stylesheet href=constellation.less>
+<script src=elements.ts></script>
+
 <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600;700" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@600;700" rel="stylesheet">
 
@@ -19,9 +22,9 @@
 <script src=graphql.ts></script>
 
 <build-note id=title>
-hi, i'm ashi krishnan, i work at apollo, and i'm here to talk about project constellation.
+hi, i'm ashi krishnan, i work at apollo, and i'm here to talk about the future of federation.
 
-project constellation covers a number of initiatives inside apollo. for now, think of it as the next version of federation. we're aiming to make it easier for you to weave together data graphs and end up with exactly the data you need, in exactly the shape you need it. that's the promise of graphql.
+we've been doing a lot of work over the last year, all aimed at making it easier for you to weave together many large graphs and end up with exactly the data you need, in exactly the shape you need it. after all, that's the promise of graphql.
 
 first, let's look at the state of graphql and federation today.
 </build-note>
@@ -280,7 +283,11 @@ first, let's look at the state of graphql and federation today.
 </build-note>
 
 <build-note id=introFedEarthseedRunSubQueries>
-  the gateway knows what queries to issue against its subgraphs to resolve the data we asked for
+  the gateway knows what queries to issue against its subgraphs to resolve the data we asked for.
+
+  that's federation as it stands today. federation is already incredibly powerful. it lets you fold multiple graphs into one—it's effectively giving us the "reduce" part of "map/reduce", but for the structure of our data itself. as with mapreduce, this lets you parallelize work—only in this case, the work is *growing the graph*. with federation, you can have multiple teams each working on growing the graph—it grows in parallel.
+
+  which means, your graph can explode.
 </build-note>
 
 <pre id=earthseedQuery>
@@ -331,14 +338,10 @@ first, let's look at the state of graphql and federation today.
     links: [...spacey.links, ...bookish.links, ...earthseed.links],
   }
   
-  When(buildInRange(introFedEarthseed, introFedEarthseedRunQuery))
+  When(buildInRange(introFedEarthseed, introFedEarthseedRunSubQueries))
     .start(() => {
       Graph.graphData(spaceyBookishEarthseed).recenter().clearHighlights()
     })
-
-  When(buildInRange(introFedEarthseedOrbit, introFedEarthseedRunSubQueries))
-    .withDuration(3[sec])
-    .at(orbit())
 
   When(introFedEarthseedRunQuery)
     .start(() => {
@@ -354,9 +357,158 @@ first, let's look at the state of graphql and federation today.
       graphql(bookish.schema, bookishManualQuery.textContent,
         {},
         {},
-        { id: 0 })            
+        { id: 0 })
+    })
+
+  When(buildInRange(introFedEarthseedOrbit, introFedEarthseedRunSubQueries))
+    .withDuration(3[sec])
+    .at(orbit())
+</script>
+
+
+<build-note id=csExplode>
+  this is amazing, but it can also be a lot! the amount of accessible data in your organization and frankly in the world is enough to make anyone's brain start dropping frames just like my computer.
+  
+  massive graphs create new, massive problems. you still have one graph to reason about, but now it's made of tens or hundreds of subgraphs, each likely maintained by a separate team. you have to make sure they fit together, make sure nobody steps on anyone else's toes.
+  
+  there are also some use cases that federation doesn't handle yet. when we federate graphs today, we end up with a federated graph that looks a lot like our subgraphs. same names, same types, same fields. but what if we want to change that? what if we want more flexibility in how we merge our graphs together?
+
+  some of you might remember schema stitching—some of you might *still be using* schema stitching. schema stitching was kindof a precursor to federation: a more bare-metal way of merging subgraphs together. with schema stitching, you could really do whatever you wanted to the subgraphs, pruning and reshaping fields, changing types. but schema stitching was very ad-hoc—literally, you write some javascript that manipulates the schema ASTs more or less directly. that's extremely flexible, but also quite hard to reason about. with federation, we can and do run validations on the composed graph. schema stitching doesn't really allow for that, because outside of the requirement that it be a valid graphql schema, we really have no way of knowing if the stitched schema is correct.
+
+  what if we could have both? the verifiability of federation with the flexibility of schema stitching?
+</build-note>
+
+<div id=explosion></div>
+<script>
+  splode = addBloom(ForceGraph3D()(explosion))
+    .nodeRelSize(1)
+    .enableNavigationControls(false)
+    .showNavInfo(false)    
+</script>
+
+<div id=whatsNext>
+  <type-writer id=whatsNextTxt></type-writer>
+</div>
+
+<build-note id=csEarlier>
+  earlier this year, we sat down and asked ourselves this question: what's next? how do build on federation? how do we develop tools to wrangle these increasingly massive graphs?
+</build-note>
+
+<build-note id=csWhatsNext>
+  we've called the result project constellation.
+</build-note>
+
+<build-note id=csEvolution>
+  project constellation is an evolution of federation, developed with a few goals in mind
+</build-note>
+
+<build-note id=csFaster>
+  we knew we wanted to improve performance
+</build-note>
+
+<build-note id=csRust>
+  to that end, we're rewriting the query planner in rust. this doesn't mean *you* have to write anything in rust; it also doesn't mean we've given up on javascript. our intention here is to provide a drop-in replacement for the current query planner within apollo server. when it's ready, all you'll have to do is update your gateway to get the benefits.
+
+  now, we're not just dropping in rust and expecting things to get faster. 
+</build-note>
+
+<build-note id=csParallelism>
+  we're also doing a lot of testing. we're building out benchmarks and using them to explore design patterns that can exploit the many, many cores today's servers are stacked with
+</build-note>
+
+<build-note id=csAheadOfTime>
+  longer term, we're developing workflows to reduce the work the gateway does—such as schema composition—by moving it to an ahead of time compilation step
+</build-note>
+
+<build-note id=csStronger>
+  that ties into our next goal, which is to make federation *stronger*
+</build-note>
+
+<build-note id=csValidations>
+  we'd like to be able to provide better validation information earlier in the development process
+</build-note>
+
+<build-note id=csErrors>
+  when you're working on some part of your graph, you should be able to compile the whole thing during development, locally, and see if there are any problems
+</build-note>
+
+<build-note id=csInsight>
+  and the tools to make that possible will give you a lot more insight than you have today into how the graph of everything liks together  
+</build-note>
+
+<build-note id=csFlexiblier>
+  that's important, because we're also making federation flexibili...er 
+</build-note>
+
+<build-note id=csMoreFlexible>
+  we want to bring back a lot of the flexibility
+</build-note>
+
+<build-note id=csStitching>
+  of schema stitching
+</build-note>
+
+<build-note id=csProject>
+  giving you more options for how to project large graphs.
+</build-note>
+
+<build-note id=csCompatibility>
+  flexibility also means compatibility.
+
+  this was an important design criteria: we absolutely did not want to introduce any mandatory changes on the client side. all the new shiny features we're about to talk about will work with existing graphql clients.
+
+  everything we're talking about today will work with your current clients and your current federated services. but they'll also work with services that aren't currently federated. federation does require a bit of work: you have to declare keys and define entity resolvers. and you may still want to do this, even in the future! but you won't have to. constellation gives us tools to federate services that have not implemented federation! it lets us weave together graphs that have no idea they're in a federation at all.
+</build-note>
+
+<build-note id=csEnd>
+  let's see how.
+</build-note>
+
+<script>
+  When(buildInRange(csExplode, csEnd))
+    .start(() => splode.resumeAnimation().graphData(blocks).zoomToFit())
+    .end(() => splode.pauseAnimation())
+
+  When(buildInRange(csExplode, csEnd))
+    .withDuration(20[sec])
+    .at(orbit(splode))
+
+  const bullets = {
+    csWhatsNext: 'project constellation:',
+    csEvolution: ' federation next',
+    csFaster: '\n    — faster',
+    csRust: '\t\t\t\t🦀',
+    csParallelism: ' ⚗️',
+    csAheadOfTime: ' ⏱',
+    csStronger: '\n    — stronger',
+    csValidations: '\t\t\t✅',
+    csErrors: ' 🔥',
+    csInsight: ' 👁',
+    csMoreFlexible: '\n    — more flexible',
+    csStitching: '\t\t🧵',
+    csProject: ' 📽',
+    csCompatibility: ' 🔌',
+  }
+
+  let txt = ''
+  for (const b of Object.keys(bullets)) {    
+    txt = bullets[b] = txt + bullets[b]
+  }
+
+  When(csFlexiblier)
+    .start(() =>
+      whatsNextTxt.text = bullets.csInsight + '\n    — flexiblier')
+
+  When(buildInRange(csWhatsNext, csEnd))
+    .changed((_, current) => {
+      if (!(current.id in bullets)) return
+      whatsNextTxt.text = bullets[current.id]
+    })
+    .end(() => {
+      whatsNextTxt.text = ''
     })
 </script>
+
 
 <!-- Letterbox & Bug -->
 <link rel=stylesheet href=bug.less>

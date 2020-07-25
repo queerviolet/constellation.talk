@@ -97,8 +97,8 @@ build-note {
 #spaceManualQuery,
 #earthseedQuery {
   position: fixed;
-  width: calc(var(--letterbox-width) - 8 * var(--su));
-  height: calc(var(--letterbox-height) - 9 * var(--su));
+  width: calc(8 * var(--su));
+  height: calc(9 * var(--su));
   top: calc(var(--letterbox-top) + 0 * var(--su));
   left: calc(var(--letterbox-left) + 0 * var(--su));
   bottom: auto;
@@ -110,8 +110,8 @@ build-note {
 #bookishManualQuery,
 #bookishFedSchema {
   position: fixed;
-  width: calc(var(--letterbox-width) - 6 * var(--su));
-  height: calc(var(--letterbox-height) - 9 * var(--su));
+  width: calc(6 * var(--su));
+  height: calc(9 * var(--su));
   top: calc(var(--letterbox-top) + 0 * var(--su));
   left: calc(var(--letterbox-left) + 10 * var(--su));
   bottom: auto;
