@@ -1,9 +1,79 @@
 @import "./base.less";
 
+.left {
+  .stage(0.5, 1, 8, 9);
+}
+
+.right {
+  .stage(0.5, 8, 8, 9);
+}
+
+#bookishFromSchema, #bookishGutenberg, #gutenbergFieldWhat, #gutenbergFieldInfer, #gutenbergStar {
+  .left();
+  .fades();  
+}
+
+#spaceyFromSchema {
+  .right();
+  .fades();
+}
+
+.sky {
+  #explosion { opacity: 1; filter: blur(20px) brightness(80%); }
+}
+
+// -- builds --
+
 .featBooks {
-  #explosion { opacity: 1; }
+  .sky();
   #bookishFedSchema {
     .stage(1, 1, 15, 8);
     opacity: 1;
   }
 }
+
+
+.featBooksFrom {
+  .sky();
+  #bookishFedSchema {
+    .stage(1, 1, 15, 8);
+  }
+  #bookishFromSchema {
+    opacity: 1;
+  }
+}
+
+.featGutenberg {
+  .sky();
+  #bookishGutenberg {
+    opacity: 1;
+  }
+}
+
+.featGutenbergWhat {
+  .sky();
+  #gutenbergFieldWhat {
+    opacity: 1;
+  }
+}
+
+.featGutenbergInfer {
+  .sky();
+  #gutenbergFieldInfer {
+    opacity: 1;
+  }
+}
+
+.featGutenbergStar {
+  .sky();
+  #gutenbergStar { opacity: 1; }
+}
+
+.featGutenbergSugar {
+  .featGutenbergStar();
+  #gutenbergFieldInfer {
+    .right();
+    opacity: 1;
+  }
+}
+

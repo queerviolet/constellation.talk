@@ -20,6 +20,15 @@ body {
   justify-content: center;
   height: 100%;
 }
+* {
+  pointer-events: none;
+}
+#graph {
+  pointer-events: auto;
+}
+#graph * {
+  pointer-events: auto;
+}
 code {
   font-size: calc(var(--su) * 0.2);
 }
@@ -92,8 +101,57 @@ build-note {
 .showGraph #graph {
   filter: none;
 }
+.left {
+  position: fixed;
+  width: calc(8 * var(--su));
+  height: calc(9 * var(--su));
+  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  left: calc(var(--letterbox-left) + 1 * var(--su));
+  bottom: auto;
+  right: auto;
+}
+.right {
+  position: fixed;
+  width: calc(8 * var(--su));
+  height: calc(9 * var(--su));
+  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  left: calc(var(--letterbox-left) + 8 * var(--su));
+  bottom: auto;
+  right: auto;
+}
+#bookishFromSchema,
+#bookishGutenberg,
+#gutenbergFieldWhat,
+#gutenbergFieldInfer,
+#gutenbergStar {
+  position: fixed;
+  width: calc(8 * var(--su));
+  height: calc(9 * var(--su));
+  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  left: calc(var(--letterbox-left) + 1 * var(--su));
+  bottom: auto;
+  right: auto;
+  transition: opacity 1000ms;
+  opacity: 0;
+}
+#spaceyFromSchema {
+  position: fixed;
+  width: calc(8 * var(--su));
+  height: calc(9 * var(--su));
+  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  left: calc(var(--letterbox-left) + 8 * var(--su));
+  bottom: auto;
+  right: auto;
+  transition: opacity 1000ms;
+  opacity: 0;
+}
+.sky #explosion {
+  opacity: 1;
+  filter: blur(20px) brightness(80%);
+}
 .featBooks #explosion {
   opacity: 1;
+  filter: blur(20px) brightness(80%);
 }
 .featBooks #bookishFedSchema {
   position: fixed;
@@ -101,6 +159,67 @@ build-note {
   height: calc(8 * var(--su));
   top: calc(var(--letterbox-top) + 1 * var(--su));
   left: calc(var(--letterbox-left) + 1 * var(--su));
+  bottom: auto;
+  right: auto;
+  opacity: 1;
+}
+.featBooksFrom #explosion {
+  opacity: 1;
+  filter: blur(20px) brightness(80%);
+}
+.featBooksFrom #bookishFedSchema {
+  position: fixed;
+  width: calc(15 * var(--su));
+  height: calc(8 * var(--su));
+  top: calc(var(--letterbox-top) + 1 * var(--su));
+  left: calc(var(--letterbox-left) + 1 * var(--su));
+  bottom: auto;
+  right: auto;
+}
+.featBooksFrom #bookishFromSchema {
+  opacity: 1;
+}
+.featGutenberg #explosion {
+  opacity: 1;
+  filter: blur(20px) brightness(80%);
+}
+.featGutenberg #bookishGutenberg {
+  opacity: 1;
+}
+.featGutenbergWhat #explosion {
+  opacity: 1;
+  filter: blur(20px) brightness(80%);
+}
+.featGutenbergWhat #gutenbergFieldWhat {
+  opacity: 1;
+}
+.featGutenbergInfer #explosion {
+  opacity: 1;
+  filter: blur(20px) brightness(80%);
+}
+.featGutenbergInfer #gutenbergFieldInfer {
+  opacity: 1;
+}
+.featGutenbergStar #explosion {
+  opacity: 1;
+  filter: blur(20px) brightness(80%);
+}
+.featGutenbergStar #gutenbergStar {
+  opacity: 1;
+}
+.featGutenbergSugar #explosion {
+  opacity: 1;
+  filter: blur(20px) brightness(80%);
+}
+.featGutenbergSugar #gutenbergStar {
+  opacity: 1;
+}
+.featGutenbergSugar #gutenbergFieldInfer {
+  position: fixed;
+  width: calc(8 * var(--su));
+  height: calc(9 * var(--su));
+  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  left: calc(var(--letterbox-left) + 8 * var(--su));
   bottom: auto;
   right: auto;
   opacity: 1;

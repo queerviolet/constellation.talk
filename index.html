@@ -22,8 +22,12 @@
 </style>
 <script src=graphql.ts></script>
 
+<build-note id=cold>
+hi, i'm ashi krishnan, i work at apollo,
+</build-note>
+
 <build-note id=title>
-hi, i'm ashi krishnan, i work at apollo, and i'm here to talk about the future of federation.
+and i'm here to talk about the future of federation.
 
 we've been doing a lot of work over the last year, all aimed at making it easier for you to weave together many large graphs and end up with exactly the data you need, in exactly the shape you need it. after all, that's the promise of graphql.
 
@@ -33,6 +37,12 @@ first, let's look at the state of graphql and federation today.
 <build-note id=introCommonLanguage>
   graphql gives us a common language to describe all the data available through an API. say we're an organization who launches people into space. we'll presumably have a database tracking who we have launched (or will launch) into space. and then we'll write a graphql schema to expose that data for our website where you can see who we've launched into space. the graphql schema might look like this:
 </build-note>
+
+<script>
+  When(buildInRange(title, introCommonLanguage))
+    .start(() => whatsNextTxt.text = 'the future of federation')
+    .end(() => whatsNextTxt.text = '')
+</script>
 
 <pre id=spaceySchema>
 <code class=graphql>
@@ -505,8 +515,225 @@ first, let's look at the state of graphql and federation today.
 </script>
 
 <build-note id=featBooks>
-  let's go back and look at our books schema
+  let's go back and look at our books schema. to federate this service, we had to define a key on `Astronaut` and implement `__entities`. this teaches the federation gateway how to enter the bookish service with an external type—namely, Astronaut.
+
+  something that's a little frustrating about this is that we actually already have all the information we need to resolve Astronaut.books. There's a `books(forAstronaut ID)` right there in our Query type. probably, we're calling the same underlying function in our Astronaut.books resolver. but there's no way to teach graphql about that. there's just no way to say, "in order to resolve this field, use data from this other field".
+
+  this is highly related to one of the most common questions I get asked: "how do I call into a resolver from another resolver?" and the answers we have today are pretty unsatisfying. basically: do it yourself. you can get a handle on the schema, and then call `execute` on it with your query. of course that doesn't really work in a federated context. the schema you have access to is the schema for whatever service you're in. if you want to make a federated query, you have to basically call up the gateway as though you're a client. that also means that any sub-queries that happen like this aren't included in query planning, so if this is something you end up doing a lot, you'll end up waterfalling—not great.
+
+  anyway, turns out we can fix it.
 </build-note>
+
+<pre id=bookishFromSchema>
+  <code class=graphql>
+    extend type Query {
+      books(forAstronaut: ID!): [Book]
+    }
+
+    extend type Astronaut {
+      id: ID! @external
+      books: [Book] @from(query: "books(forAstronaut: id)")
+    }
+    
+    type Book {
+      title: String
+      author: Author
+      themes: [String!]
+    }
+    
+    type Author {
+      name: String
+      books: [Book!]
+    }
+  </code>
+</pre>
+
+<build-note id=featBooksFrom>
+oooh. what we've done here is introduce a new directive—the @from directive, which says, "in order to resolve this field, run this other query."
+
+if you look carefully, you'll notice that this isn't actually a full query—we couldn't execute it from a client, because it doesn't select any fields. but here, that's okay! this query isn't going to get run directly. instead, it provides input to the query planner. when the gateway receives an end-user query which traverses Astronaut.books, it will insert this partial query into the query plan, and along with whatever selection set the frontend is asking for.
+
+another thing: we no longer need key, because our query explicitly references `id`. i did that to demonstrate that we don't need it, but there are still good reasons to define keys and entities. notably, entities are batch-resolved, so we might see better performance if we're working with large sets of astronauts.
+
+this turns out to be pretty powerful, especially when you start thinking about larger graphs.
+
+say project gutenberg has a graphql api. with constellation, we can federate our own graph with it—no reason we can't, right? we just need a url.
+</build-note>
+
+<pre id=bookishGutenberg>
+  <code class=graphql>
+    extend type Query {
+      books(forAstronaut: ID!): [Book]
+    }
+
+    extend type Astronaut {
+      id: ID! @external
+      books: [Book] @from(query: "books(forAstronaut: id)")
+    }
+    
+    type Book {
+      title: String
+      author: Author
+      themes: [String!]
+      text: String
+        @from(query: "
+          gutenberg::search(
+            author: author.name,
+            title: title).nodes.0.text")
+    }
+    
+    type Author {
+      name: String
+      books: [Book!]
+    }
+  </code>
+</pre>
+
+<build-note id=featGutenberg>
+doing that lets us add a `text` field to our books.
+
+there's a bit more going on here. we've introduced some new query syntax—that's fine, clients don't ever have to know about it, it's just for use in the schema.
+
+i want to emphasize that we haven't entirely finalized this syntax
+
+the new pieces are schema identifiers and dotted paths. here, the schema identifier tells us to query the gutenberg schema. we need the dotted paths to dig into the search results and lift the text of the first one up so it can be its own string field. keeping with the spirit of graphql, dot paths here act like optional chains—if any step is nullable, the whole thing is nullable
+
+i think you can start to see how powerful this can be. but we're not quite done.
+we're aiming to make the developer experience rather nicer than this.
+
+for example, the query chain is a bit long, and it's actually clear how we can shorten it. if this were a programming language, we'd just use a variable, but we don't have those. maybe we can define a field?
+</build-note>
+
+<build-note id=featGutenbergWhat>
+  we don't know the type of this field. we could go and figure it out—it's some kind of connection—but this is another case where the compiler *already knows*, so maybe we could just ask it to fill something in?
+</build-note>
+
+<pre id=gutenbergFieldWhat>
+  <code class=graphql>
+    extend type Query {
+      books(forAstronaut: ID!): [Book]
+    }
+
+    extend type Astronaut {
+      id: ID! @external
+      books: [Book] @from(query: "books(forAstronaut: id)")
+    }
+    
+    type Book {
+      title: String
+      author: Author
+      themes: [String!]
+      gutenbergBooks: ??? # what goes here??
+        @from(query: "
+          gutenberg::search(
+            author: author.name,
+            title: title)
+        ")
+      text: String @from(field: "gutenbergBooks.nodes.0.text")
+    }
+    
+    type Author {
+      name: String
+      books: [Book!]
+    }
+  </code>
+</pre>
+
+
+<build-note id=featGutenbergInfer>
+  that's what __Infer does. __Infer will be erased when we compose this schema. the compiler will substitute in the acutal return type of the query.
+
+  i think you can see how this gets pretty powerful, pretty fast. but it's also getting increasingly hard to read. we're doing a lot of work inside strings within directives, which feels a bit off. and now there's underscores happening, which are always a little intimidating.
+  
+  what if... what if we could write this?
+</build-note>
+
+<pre id=gutenbergFieldInfer>
+  <code class=graphql>
+    extend type Query {
+      books(forAstronaut: ID!): [Book]
+    }
+
+    extend type Astronaut {
+      id: ID! @external
+      books: [Book] @from(query: "books(forAstronaut: id)")
+    }
+    
+    type Book {
+      title: String
+      author: Author
+      themes: [String!]
+      gutenbergBooks: __Infer
+        @from(query: "
+          gutenberg::search(
+            author: author.name,
+            title: title)
+        ")
+      text: String @from(field: "gutenbergBooks.nodes.0.text")
+    }
+    
+    type Author {
+      name: String
+      books: [Book!]
+    }
+  </code>
+</pre>
+
+<build-note id=featGutenbergStar>
+  we call this a star schema. it's a proper superset of graphql.
+
+  right now, you might be thinking, "oh, cool!" or you might be thinking: "ashi! you promised back compatibility! you can't go adding features to the language all willy-nilly"
+
+  ah, but this *is* back compatible. all of this compiles down to graphql. everything on the left is syntactic sugar for this:
+</build-note>
+
+<build-note id=featGutenbergSugar>
+  it's just a bit cleaner, a bit shorter.
+
+  this is all possible because we're introducing a compile step. or rather, we're making the existing compile step—which happens in the gateway—more explicit, and more powerful.
+
+  to be clear: we're not completely set on this syntax—though it does *feel* rather nice, doesn't it? part of why we're sharing this early work is to get some feedback.
+
+  and the other reason is to get you excited. this is really cool! i mean, can you imagine the process you'd have to go through to write a service that does something like this today? here, with really just a few extensions to federation, we're able to do it without writing any resolvers, without pushing any binaries. these tools let us express joins and delegation and a whole host of data *flow* concepts within the data layer, where they can be statically analyzed, planned, and validated.
+  
+  that's exciting now, and it's going to be vital in the future
+</build-note>
+
+<build-note id=future>
+  as the space of data that we're working with continues to grow in size and complexity, these are the kinds of tools we'll need to wrangle, project, and reshape those graphs.
+
+  federation is the first step. and this? this is the next one.
+
+  thank you.
+</build-note>
+
+<pre id=gutenbergStar>
+  <code class=graphql>
+    extend type Query {
+      books(forAstronaut: ID!): [Book]
+    }
+
+    extend type Astronaut {
+      id: ID! @external
+      books: [Book] = query books(forAstronaut: id)
+    }
+    
+    type Book {
+      title: String
+      author: Author
+      themes: [String!]
+      gutenbergBooks = gutenberg::search(
+        author: author.name, title
+      )
+      text: String = gutenberg.text
+    }
+    
+    type Author {
+      name: String
+      books: [Book!]
+    }
+  </code>
+</pre>
 
 <script>
   When(featBooks)

@@ -20,6 +20,15 @@ body {
   justify-content: center;
   height: 100%;
 }
+* {
+  pointer-events: none;
+}
+#graph {
+  pointer-events: auto;
+}
+#graph * {
+  pointer-events: auto;
+}
 code {
   font-size: calc(var(--su) * 0.2);
 }
@@ -118,6 +127,11 @@ build-note {
   right: auto;
   transition: opacity 1000ms;
   opacity: 0;
+}
+.title #whatsNext,
+.introCommonLanguage #whatsNext {
+  display: block;
+  opacity: 1;
 }
 .introSpaceySchema #spaceySchema {
   opacity: 1;
