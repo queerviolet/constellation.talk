@@ -3843,7 +3843,7 @@ there's a bit more going on here. we've introduced some new query syntax—that'
 
 i want to emphasize that we haven't entirely finalized this syntax
 
-the new pieces are schema identifiers and dotted paths. here, the schema identifier tells us to query the gutenberg schema. we need the dotted paths to dig into the search results and lift the text of the first one up so it can be its own string field. keeping with the spirit of graphql, dot paths here act like optional chains—if any step is nullable, the whole thing is nullable
+the new pieces are graph identifiers and dotted paths. here, the graph identifier tells us to query the gutenberg subgraph. we need the dotted paths to dig into the search results and lift the text of the first one up so it can be its own string field. keeping with the spirit of graphql, dot paths here act like optional chains—if any step is nullable, the whole thing is nullable
 
 i think you can start to see how powerful this can be. but we're not quite done.
 we're aiming to make the developer experience rather nicer than this.
@@ -3962,7 +3962,7 @@ for example, the query chain is a bit long, and it's actually clear how we can s
 
     extend type Astronaut {
       id: ID! @external
-      books: [Book] = query books(forAstronaut: id)
+      books: [Book] = query::books(forAstronaut: id)
     }
     
     type Book {

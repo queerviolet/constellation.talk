@@ -147,11 +147,11 @@ build-note {
 }
 .sky #explosion {
   opacity: 1;
-  filter: blur(20px) brightness(80%);
+  filter: blur(20px) brightness(50%);
 }
 .featBooks #explosion {
   opacity: 1;
-  filter: blur(20px) brightness(80%);
+  filter: blur(20px) brightness(50%);
 }
 .featBooks #bookishFedSchema {
   position: fixed;
@@ -165,7 +165,7 @@ build-note {
 }
 .featBooksFrom #explosion {
   opacity: 1;
-  filter: blur(20px) brightness(80%);
+  filter: blur(20px) brightness(50%);
 }
 .featBooksFrom #bookishFedSchema {
   position: fixed;
@@ -181,35 +181,35 @@ build-note {
 }
 .featGutenberg #explosion {
   opacity: 1;
-  filter: blur(20px) brightness(80%);
+  filter: blur(20px) brightness(50%);
 }
 .featGutenberg #bookishGutenberg {
   opacity: 1;
 }
 .featGutenbergWhat #explosion {
   opacity: 1;
-  filter: blur(20px) brightness(80%);
+  filter: blur(20px) brightness(50%);
 }
 .featGutenbergWhat #gutenbergFieldWhat {
   opacity: 1;
 }
 .featGutenbergInfer #explosion {
   opacity: 1;
-  filter: blur(20px) brightness(80%);
+  filter: blur(20px) brightness(50%);
 }
 .featGutenbergInfer #gutenbergFieldInfer {
   opacity: 1;
 }
 .featGutenbergStar #explosion {
   opacity: 1;
-  filter: blur(20px) brightness(80%);
+  filter: blur(20px) brightness(50%);
 }
 .featGutenbergStar #gutenbergStar {
   opacity: 1;
 }
 .featGutenbergSugar #explosion {
   opacity: 1;
-  filter: blur(20px) brightness(80%);
+  filter: blur(20px) brightness(50%);
 }
 .featGutenbergSugar #gutenbergStar {
   opacity: 1;
@@ -223,6 +223,20 @@ build-note {
   bottom: auto;
   right: auto;
   opacity: 1;
+}
+.future #explosion {
+  opacity: 1;
+  filter: none;
+}
+.future #gutenbergFieldInfer {
+  position: fixed;
+  width: calc(8 * var(--su));
+  height: calc(9 * var(--su));
+  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  left: calc(var(--letterbox-left) + 8 * var(--su));
+  bottom: auto;
+  right: auto;
+  opacity: 0;
 }
 
 /*# sourceMappingURL=feat.811d85be.css.map */

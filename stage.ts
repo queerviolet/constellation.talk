@@ -275,5 +275,5 @@ function embiggen(graphData: { nodes: any[], links: any[] }) {
 }
 
 Object.assign(window as any, {
-  ForceGraph3D, THREE, orbit, Graph, blocks: embiggen(blocks), addBloom, spinCam
+  ForceGraph3D, THREE, orbit, Graph, blocks: embiggen(embiggen(blocks)), addBloom, spinCam
 })

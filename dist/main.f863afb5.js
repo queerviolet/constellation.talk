@@ -697,7 +697,7 @@ Object.assign(window, {
   THREE,
   orbit,
   Graph,
-  blocks: embiggen(_blocks.default),
+  blocks: embiggen(embiggen(_blocks.default)),
   addBloom,
   spinCam
 });
