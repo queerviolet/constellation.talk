@@ -1,77 +1,142 @@
 @import "./base.less";
+@import "./panel.less";
 
-.left {
-  .stage(0.5, 1, 8, 9);
+.hljs-type {
+  transition: color 1s;
 }
 
-.right {
-  .stage(0.5, 8, 8, 9);
-}
-
-#bookishFromSchema, #bookishGutenberg, #gutenbergFieldWhat, #gutenbergFieldInfer, #gutenbergStar {
+#agitpropFedSchema,
+#agitpropViaSchema,
+#unifiedSchema,
+#unifiedGutenberg,
+// #bookishGutenberg,
+// #gutenbergFieldWhat,
+// #gutenbergFieldInfer,
+#unifiedStar
+{
   .left();
   .fades();  
 }
 
-#spaceyFromSchema {
+#obscuraFedSchema,
+#obscuraViaSchema,
+#agitpropFromSchema {
   .right();
   .fades();
 }
 
+.blink-color(@from: @pink-dark, @to: @pink-light) {
+  --blink-color-from: @from;
+  --blink-color-to: @to;
+  animation-name: blink-color;
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+}
+
+@keyframes blink-color {
+  0% { color: var(--blink-color-from); }
+  50% { color: var(--blink-color-to); }
+  100% { color: var(--blink-color-from); }
+}
+
+.blink-pink {
+  .blink-color(@pink-dark, @pink-light);
+}
+
+.blink-blue {
+  .blink-color(@blue-dark, @blue-light);
+}
+
+.blink-purple {
+  .blink-color(@purple-dark, @purple-light);
+}
+
 .sky {
   #explosion { opacity: 1; filter: blur(20px) brightness(50%); }
+  // #graph {
+  //   opacity: 1;
+  //   filter: blur(20px) brightness(50%);
+  // }
 }
 
 // -- builds --
 
-.featBooks {
+.feat {
   .sky();
-  #bookishFedSchema {
-    .stage(1, 1, 15, 8);
+  #unifiedQuery { opacity: 1; }  
+}
+
+.featOldSchemas {
+  .sky();
+  > #agitpropSchema { opacity: 1; }
+  > #obscuraSchema { opacity: 1; }
+}
+
+.featOldSchemasHighlight {
+  .featOldSchemas();
+  .type-User { .blink-pink(); }
+  .type-Member { .blink-blue(); }
+}
+
+.featFedSchemas {
+  .sky();
+  > #agitpropFedSchema { opacity: 1; }
+  > #obscuraFedSchema { opacity: 1; }
+  .type-User { .blink-purple(); }
+}
+
+.featVia {
+  .sky();
+  > #agitpropViaSchema { opacity: 1; }
+  > #obscuraViaSchema { opacity: 1; }
+}
+
+.featUnifiedSchema {
+  .sky();
+  > #unifiedSchema { opacity: 1; }
+}
+
+.featPositionButNoText {
+  .sky();
+  > #agitpropSchema { opacity: 1; }
+}
+
+.featUnifiedGutenberg {
+  .sky();
+  > #unifiedGutenberg {
     opacity: 1;
   }
 }
 
+// .featGutenberg {
+//   .sky();
+//   #bookishGutenberg {
+//     opacity: 1;
+//   }
+// }
 
-.featBooksFrom {
+// .featGutenbergWhat {
+//   .sky();
+//   #gutenbergFieldWhat {
+//     opacity: 1;
+//   }
+// }
+
+// .featGutenbergInfer {
+//   .sky();
+//   #gutenbergFieldInfer {
+//     opacity: 1;
+//   }
+// }
+
+.featUnifiedStar {
   .sky();
-  #bookishFedSchema {
-    .stage(1, 1, 15, 8);
-  }
-  #bookishFromSchema {
-    opacity: 1;
-  }
+  #unifiedStar { opacity: 1; }
 }
 
-.featGutenberg {
-  .sky();
-  #bookishGutenberg {
-    opacity: 1;
-  }
-}
-
-.featGutenbergWhat {
-  .sky();
-  #gutenbergFieldWhat {
-    opacity: 1;
-  }
-}
-
-.featGutenbergInfer {
-  .sky();
-  #gutenbergFieldInfer {
-    opacity: 1;
-  }
-}
-
-.featGutenbergStar {
-  .sky();
-  #gutenbergStar { opacity: 1; }
-}
-
-.featGutenbergSugar {
-  .featGutenbergStar();
-  #gutenbergFieldInfer {
+.featUnifiedSugar {
+  .featUnifiedStar();
+  #unifiedGutenberg {
     .right();
     opacity: 1;
   }
@@ -79,7 +144,7 @@
 
 .future {
   #explosion { opacity: 1; filter: none; }
-  #gutenbergFieldInfer {
+  #unifiedGutenberg {
     .right();
     opacity: 0;
   }

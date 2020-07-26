@@ -20,6 +20,15 @@ body {
   justify-content: center;
   height: 100%;
 }
+* {
+  pointer-events: none;
+}
+#graph {
+  pointer-events: auto;
+}
+#graph * {
+  pointer-events: auto;
+}
 code {
   font-size: calc(var(--su) * 0.2);
 }
@@ -159,7 +168,7 @@ build-note {
 .csFlexiblier #explosion,
 .csMoreFlexible #explosion,
 .csStitching #explosion,
-.csProject #explosion,
+.csStream #explosion,
 .csCompatibility #explosion {
   filter: none;
   opacity: 1;
@@ -177,7 +186,7 @@ build-note {
 .csFlexiblier #whatsNext,
 .csMoreFlexible #whatsNext,
 .csStitching #whatsNext,
-.csProject #whatsNext,
+.csStream #whatsNext,
 .csCompatibility #whatsNext {
   display: flex;
 }
@@ -194,7 +203,7 @@ build-note {
 .csFlexiblier #whatsNext,
 .csMoreFlexible #whatsNext,
 .csStitching #whatsNext,
-.csProject #whatsNext,
+.csStream #whatsNext,
 .csCompatibility #whatsNext {
   display: flex;
   opacity: 1;

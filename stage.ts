@@ -27,9 +27,9 @@ export const Graph: ForceGraph3D = ForceGraph3D({ controlType: 'orbit' })(graph)
 Graph.renderer().setPixelRatio(window.devicePixelRatio)
 
 const graphColors = {
-  spacey: red,
-  bookish: blue,
-  earthseed: purple,
+  agitprop: red,
+  obscura: blue,
+  unified: purple,
 }
 
 
@@ -145,7 +145,7 @@ Graph.clearHighlights = function() {
 
 
 function addBloom(graph: ForceGraph3D) {
-  const bloomPass = new (UnrealBloomPass as any)();
+  const bloomPass = new (UnrealBloomPass as any)()
   bloomPass.strength = 1;
   bloomPass.radius = 1;
   bloomPass.threshold = 0.1;
@@ -158,14 +158,15 @@ addBloom(Graph)
 const SLOW = 1
 
 const Y = new THREE.Vector3(0, 1, 0)
-export function orbit(graph = Graph, speed = SLOW, axis = Y) {
+export function orbit(graph = Graph, point = {x: 0, y: 0, z: 0}) {
   return t => {
     if (graph.isAutoZooming) return
-    let angle = t * speed
+    let angle = t * SLOW
     let distance = graph.camera().position.length()
     graph.cameraPosition({
-      x: distance * Math.sin(angle),
-      z: distance * Math.cos(angle),
+      x: (point.x || 0) + distance * Math.sin(angle),
+      y: point.y || 0,
+      z: (point.z || 0) + distance * Math.cos(angle),
     })
   }
 }

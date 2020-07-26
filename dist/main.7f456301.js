@@ -430,8 +430,14 @@ global.Timeline = _timeline.default; // import Builds from './builds'
 
 (0, _highlightjsGraphql.default)(_highlight.default);
 
-_highlight.default.initHighlightingOnLoad(); // import './fire'
+_highlight.default.initHighlightingOnLoad();
 
+setTimeout(() => {
+  for (const type of document.getElementsByClassName('hljs-type')) {
+    const name = type.textContent.replace('[', '').trim();
+    type.classList.add(`type-${name}`);
+  }
+}, 2000); // import './fire'
 
 function collectBuilds() {
   const all = Array.from(document.getElementsByTagName('build-note'));

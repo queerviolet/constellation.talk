@@ -1,0 +1,94 @@
+.panel {
+  border-radius: calc(0.2 * var(--su));
+  position: fixed;
+  top: var(--panel-top);
+  left: var(--panel-left);
+  right: var(--panel-right);
+  bottom: var(--panel-bottom);
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #2075d6;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 5px 5px 10px rgba(32, 117, 214, 0.2);
+  transition: width 300ms, height 300ms, top 300ms, bottom 300ms, left 300ms, right 300ms;
+}
+.panel > .content {
+  position: absolute;
+  top: calc(0.65 * var(--su));
+  left: 0;
+  bottom: 0;
+  right: 0;
+  overflow: auto;
+}
+.panel h1 {
+  color: black;
+  margin: 0;
+  padding-left: calc(0.26 * var(--su));
+  height: calc(0.65 * var(--su));
+  line-height: calc(0.65 * var(--su));
+  font-size: calc(0.26 * var(--su));
+  font-family: 'Menlo', 'Source Code Pro';
+  background: rgba(32, 117, 214, 0.5);
+  color: white;
+}
+.panel code {
+  margin: 6px;
+  display: block;
+  white-space: pre-wrap;
+}
+.panel.enter {
+  animation: slide-in 600ms forwards;
+}
+.panel.enter h1 {
+  animation: glow 1000ms forwards;
+}
+.panel.leave {
+  animation: slide-in 600ms reverse forwards;
+}
+.panel.leave h1 {
+  animation: glow 1000ms forwards;
+}
+.win-enter {
+  animation: slide-in 600ms forwards;
+}
+.win-enter h1 {
+  animation: glow 1000ms forwards;
+}
+.win-leave {
+  animation: slide-in 600ms reverse forwards;
+}
+.win-leave h1 {
+  animation: glow 1000ms forwards;
+}
+@keyframes glow {
+  0% {
+    background: #2075d6;
+    color: black;
+  }
+  100% {
+    background: rgba(32, 117, 214, 0.5);
+    color: white;
+  }
+}
+@keyframes slide-in {
+  0% {
+    transform: translateX(-100%);
+    height: calc(0.65 * var(--su));
+  }
+  50% {
+    transform: translateX(0%);
+    height: calc(0.65 * var(--su));
+  }
+  100% {
+    transform: translateX(0%);
+    height: var(--panel-height);
+  }
+}
+.token-line {
+  min-height: 1em;
+}
+.token-line[data-highlight=true] {
+  background: rgba(255, 0, 255, 0.5);
+}
+
+/*# sourceMappingURL=panel.812bfbc1.css.map */

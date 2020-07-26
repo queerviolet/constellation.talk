@@ -2,83 +2,80 @@
 
 // -- stage setup --
 
-#spaceySchema, #spaceyQuery, #spaceManualQuery, #earthseedQuery {
-  .stage(0, 0, 8, 9);
+#agitpropSchema, #agitpropQuery, #agitpropManualQuery, #spaceManualQuery, #unifiedQuery {
+  .left();
   .fades();
 }
 
-#bookishSchema, #bookishManualQuery, #bookishFedSchema {
-  .stage(0, 10, 6, 9);
+#obscuraSchema, #obscuraManualQuery, #obscuraFedSchema {
+  .right();
   .fades();
 }
 
 // -- builds --
-.title, .introCommonLanguage {
+.introTitle, .introClub {
   #whatsNext {
     display: block;
     opacity: 1;
   }
 }
 
-.introSpaceySchema {
-  #spaceySchema { opacity: 1; }
-}
-
-.introSpaceyGraph,
-.introSpaceyGraphOrbit {
-  .introSpaceySchema();
+.introAgitpropGraph,
+.introAgitpropGraphOrbit {
   .showGraph();
 }
 
-.introSpaceyQuery,
-.introSpaceyRunQuery {
-  #spaceyQuery { opacity: 1; }
+.introAgitpropSchema {
+  .introAgitpropGraph();
+  #agitpropSchema { opacity: 1; }
+}
+
+.introAgitpropQuery,
+.introAgitpropRunQuery {
+  #agitpropQuery { opacity: 1; }
   .showGraph();
 }
 
-.introBookishSchema {
-  #bookishSchema { opacity: 1; }
+.introObscuraGraph, .introObscuraOrbit {
+  .showGraph();
 }
 
-.introBookishGraph,
-.introBookishGraphOrbit {
-  .introBookishSchema();
-  .showGraph();
+.introObscuraSchema {
+  .introObscuraGraph();
+  #obscuraSchema { opacity: 1; }
 }
 
 .introBothGraph, .introBothGraphOrbit {
-  #spaceySchema { opacity: 1; }
-  #bookishSchema { opacity: 1; }
   .showGraph();
 }
 
-.introManualQuerySpacey,
-.introRunManualQuerySpacey {
-  #spaceManualQuery { opacity: 1; }  
+.introManualQueryAgitprop,
+.introRunManualQueryAgitprop {
+  #agitpropManualQuery { opacity: 1; }  
   .showGraph();
 }
 
-.introManualQueryBookish,
-.introRunManualQueryBookish {
-  .introRunManualQuerySpacey();
-  #bookishManualQuery { opacity: 1; }
+.introManualQueryObscura,
+.introRunManualQueryObscura {
+  .introRunManualQueryAgitprop();
+  #obscuraManualQuery { opacity: 1; }
 }
 
 .introFed {
   .introBothGraphOrbit();
 }
 
-.introFedBookish, .introFedEarthseed {
-  #spaceySchema { opacity: 1; }
-  #bookishFedSchema { opacity: 1; }
+.introFedObscura, .introFedUnified {
+  #agitpropSchema { opacity: 1; }
+  #obscuraFedSchema { opacity: 1; }
   .showGraph();
 }
 
-.introFedEarthseedOrbit {
+.introFedUnifiedOrbit {
   .showGraph();
 }
 
-.introFedEarthseedQuery, .introFedEarthseedRunQuery, .introFedEarthseedRunSubQueries {
+.introFedUnifiedQuery, .introFedUnifiedRunQuery, .introFedUnifiedRunSubQueries {
   .showGraph();
-  #earthseedQuery { opacity: 1; }
+  #unifiedQuery { opacity: 1; }
 }

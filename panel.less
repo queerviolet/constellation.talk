@@ -1,0 +1,133 @@
+@import './colors.less';
+
+@title-bar-height: calc(0.65 * var(--su));
+
+.rounded(@radius: calc(0.2 * var(--su))) { 
+  border-radius: @radius;
+}
+
+.monospace(@font-size: 14px) {
+  font-family: Menlo;
+  font-size: @font-size;
+}
+
+@stage-width: calc(16 * var(--su));
+@stage-height: calc(9 * var(--su));
+
+.win(@top: 0, @left: 0, @width: calc(16 * var(--su)), @height: calc(9 * var(--su))) {
+  --panel-top: @top;
+  --panel-left: @left;
+  --panel-right: calc(@stage-width - @width);
+  --panel-bottom: calc(@stage-height - @height);
+  --panel-width: @width;
+  --panel-height: @height;
+  .panel();
+}
+
+.panel {
+  .rounded();
+  position: fixed;
+  top: var(--panel-top);
+  left: var(--panel-left);
+  right: var(--panel-right);
+  bottom: var(--panel-bottom);
+
+  background: fadeout(darken(@blue-base, 80%), 10%);
+  border: 1px solid @blue-base;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 5px 5px 10px fadeout(@blue-base, 80%);
+
+  transition: width 300ms, height 300ms, top 300ms, bottom 300ms, left 300ms, right 300ms;
+
+  > .content {
+    position: absolute;
+    top: @title-bar-height;
+    left: 0; bottom: 0; right: 0;
+    overflow: auto;
+  }
+
+  h1 {
+    color: black;
+    margin: 0;
+    padding-left: calc(0.26 * var(--su));
+    height: @title-bar-height;
+    line-height: @title-bar-height;    
+    font-size: calc(0.26 * var(--su));
+    font-family: 'Menlo', 'Source Code Pro';
+
+    background: fadeout(@blue-base, 50%);
+    color: white;
+  }
+
+  code {
+    margin: 6px;
+    display: block;
+    white-space: pre-wrap;
+  }
+
+  &.enter {
+    animation: slide-in 600ms forwards;
+    h1 {
+      animation: glow 1000ms forwards;
+    }
+  }
+
+  &.leave {
+    animation: slide-in 600ms reverse forwards;
+    h1 {
+      animation: glow 1000ms forwards;
+    }
+  }
+}
+
+.win-enter {
+  animation: slide-in 600ms forwards;
+  h1 {
+    animation: glow 1000ms forwards;
+  }
+}
+
+.win-leave {
+  animation: slide-in 600ms reverse forwards;
+  h1 {
+    animation: glow 1000ms forwards;
+  }
+}
+
+@keyframes glow {
+  0% {
+    background: @blue-base;
+    color: black;
+  }
+
+  100% {
+    background: fadeout(@blue-base, 50%);
+    color: white;
+  }
+}
+
+@keyframes slide-in {
+  0% {
+    transform: translateX(-100%);
+    height: @title-bar-height;    
+  }
+
+  50% {
+    transform: translateX(0%); 
+    height: @title-bar-height;   
+  }
+
+  100% {
+    transform: translateX(0%);
+    height: var(--panel-height);
+  }
+}
+
+.token-line {
+  min-height: 1em;
+
+  &[data-highlight=true] {
+    background: rgba(255, 0, 255, 0.5);
+  }
+}

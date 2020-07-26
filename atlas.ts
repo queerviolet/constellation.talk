@@ -49,6 +49,7 @@ const SCALAR_TYPES = {
   String: true,
   Int: true,
   Float: true,
+  Date: true,
   Boolean: true
 }
 
@@ -90,7 +91,7 @@ export class Node extends Entity {
     const {graph, owner} = type
     return (
       type.type in Node.ROOT_TYPES || owner !== graph
-        ? `${owner}.${type.type}`
+        ? `${owner}::${type.type}`
         :
         type.type
     )

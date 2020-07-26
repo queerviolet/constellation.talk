@@ -13,6 +13,12 @@ import hljsGraphQl from 'highlightjs-graphql'
 import 'highlight.js/styles/atelier-cave-dark.css'
 hljsGraphQl(hljs)
 hljs.initHighlightingOnLoad()
+setTimeout(() => {
+  for (const type of document.getElementsByClassName('hljs-type')) {
+    const name = type.textContent.replace('[', '').trim()
+    type.classList.add(`type-${name}`)
+  }
+}, 2000)
 
 // import './fire'
 

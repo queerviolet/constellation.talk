@@ -3,6 +3,7 @@
 
 <title>The Future of Federation</title>
 <link rel=stylesheet href=base.less>
+<link rel=stylesheet href=panel.less>
 <link rel=stylesheet href=intro.less>
 <link rel=stylesheet href=constellation.less>
 <link rel=stylesheet href=feat.less>
@@ -18,15 +19,21 @@
 <script src=main.js></script>
 
 <style>
-  .hljs { background: none; }
+  .hljs, .hljs-keyword, .hljs-type {
+    background: none;
+    text-shadow: 
+      0 0
+      calc(var(--su) * 0.005)
+      black;
+  }
 </style>
 <script src=graphql.ts></script>
 
-<build-note id=cold>
+<build-note id=introCold>
 hi, i'm ashi krishnan, i work at apollo,
 </build-note>
 
-<build-note id=title>
+<build-note id=introTitle>
 and i'm here to talk about the future of federation.
 
 we've been doing a lot of work over the last year, all aimed at making it easier for you to weave together many large graphs and end up with exactly the data you need, in exactly the shape you need it. after all, that's the promise of graphql.
@@ -34,214 +41,254 @@ we've been doing a lot of work over the last year, all aimed at making it easier
 first, let's look at the state of graphql and federation today.
 </build-note>
 
-<build-note id=introCommonLanguage>
-  graphql gives us a common language to describe all the data available through an API. say we're an organization who launches people into space. we'll presumably have a database tracking who we have launched (or will launch) into space. and then we'll write a graphql schema to expose that data for our website where you can see who we've launched into space. the graphql schema might look like this:
+<build-note id=introClub>
+  i'm in this club where we read... inspirational fiction. we've got an app that lets us keep track of what we're reading and make notes. that app talks to a graphql backend. this is the graph:
 </build-note>
 
 <script>
-  When(buildInRange(title, introCommonLanguage))
+  When(buildInRange(introTitle, introClub))
     .start(() => whatsNextTxt.text = 'the future of federation')
     .end(() => whatsNextTxt.text = '')
 </script>
 
-<pre id=spaceySchema>
+<pre id=agitpropSchema>
 <code class=graphql>
-  type Query {
-    launches: [Launch!]!
-    astronaut(byName: String!): Astronaut
-    missions: [Mission!]!
-    ships: [Ship!]!
-  }
+# agitprop.gql
 
-  type Launch {
-    id: ID!
-    site: String
-    mission: Mission
-    ship: Ship
-    astronauts: [Astronaut]!
-  }
-  
-  type Ship {
-    id: ID!
-    name: String
-    type: String
-  }
- 
-  type Astronaut {
-    id: ID!
-    name: String!    
-    trips: [Launch]!
-  }
-  
-  type Mission {
-    name: String
-  }
+type Query {
+  readings(title: String, author: String): [Reading!]!
+  user(email: String): User
+}
+
+type User {
+  email: String
+  displayName: String
+  notes(title: String, author: String): [Note]
+}
+
+type Note {
+  user: User
+  reading: Reading
+  position: Int
+  text: String
+  date: Date
+}
+
+type Reading {
+  title: String
+  author: String
+  notes(email: String): [Note]
+}
+
+scalar Date
 </code>
 </pre>
 
-<build-note id=introSpaceySchema>
-  this looks like a tree, but when we parse it, we can see that it creates a structure with cross-links—
+<build-note id=introAgitpropGraph>
+  we can query readings, we can query users, and users can leave notes on readings. a little benzene ring of data.
 </build-note>
 
-<script>
-  EMPTY = {nodes: [], links: []}
-  When(buildInRange(title, introSpaceySchema))
-    .start(() => Graph.graphData(EMPTY))
-</script>
-
-<build-note id=introSpaceyGraph>
-  —that is, it gets linked into a graph.
+<build-note id=introAgitpropGraphOrbit>
+  when I said "here's the graph" just then, you may have been expecting something more like
 </build-note>
 
-<build-note id=introSpaceyGraphOrbit>
-  in this graph, types are nodes—they are places you can *be*. fields are edges—they are ways you can *move*. resolvers teach us *how to walk along an edge*.
+<build-note id=introAgitpropSchema>
+  ...this
+
+  these are two views of more or less the same data—although our little floating space graph has a bit of information pruned out for simplicity.
+
+  i started with the graph because... well, because it looks really cool, to be honest. but also! because i want to move away from the syntax a little bit and invite you to start thinking about graphs *as graphs*, and specifically, as structures we can manipulate: shift, fold, and reshape.
+
+  [[ SHAKE A NODE ]]
+
+  in this space, types are places you can *be*. fields are journeys—ways you can *move* from place to place. resolvers teach us *how to take a journey*.
 </build-note>
 
-<pre id=bookishSchema>
-  <code class=graphql>
-    type Query {
-      books(forAstronaut: ID!): [Book]
-    }
-    
-    type Book {
-      title: String
-      author: Author
-      themes: [String!]
-    }
-    
-    type Author {
-      name: String
-      books: [Book!]
-    }
-  </code>
-</pre>
-
-<pre id=spaceyQuery>
-  <code class=graphql>
-    query {
-      astronaut(byName: "Sally") {
-        trips {
-          mission { name }
-        }
-      }
-    }
-  </code>
-</pre>
-
-<build-note id=introSpaceyQuery>
+<build-note id=introAgitpropQuery>
   so when we receive a query
 </build-note>
-<build-note id=introSpaceyRunQuery>
+
+<pre id=agitpropQuery>
+<code class=graphql>
+query {
+  readings(
+    title: "Black Skin, White Masks",
+    author: "Frantz Fanon") {
+    notes(email: "i@ashi.io") {
+      position text
+    }
+  }
+}
+</code>
+</pre>
+
+<build-note id=introAgitpropRunQuery>
   the resolvers know how to take us to the data
 
-  if we didn't have graphql, we would still be able to expose this data. we'd just have to come up with our own interface to request it—maybe some RESTful api. 
+  if we didn't have graphql, we would still be able to expose this data. we'd just have to come up with our own interface to request it.
 
-  but graphql gives us a common language for expressing our schema. that common language makes it easier to get data out of graphql endpoints. it also means that endpoints can be merged together and treated as a single graph.
+  graphql gives us a common language for expressing the shape of our data. yes, that makes accessing the data easier. but it's also more than that. a colleague of mine once said: "every problem in computer science can be solved with another layer of indirection".
 
-  after we've been launching people into space for a while, we notice that most of the people who want to go to space are sci-fi fans, so we want to roll out a feature where we track what folks are reading and use it to inspire future missions. this project is run by a separate team, so they produce a separate schema:
-</build-note>
-<build-note id=introBookishSchema>
-  which links into another graph
+  i probably shouldn't say this at a graphql summit, while working for the graphql people, but graphql is ultimately kindof a stupid technology. i mean that in the most loving way possible! it's beautifully stupid, beautifully simple. it's basically describing all your data as a big typed JSON object. anyone could have designed it, and in fact, everyone did! and everyone did it differently.
+  
+  but a common language is a powerful thing. with a common language, we can connect disparate clusters of concepts and data. the common language creates a new space, a data layer that holds the graph of everything.
+
+  some folks from the book club started a film club, which also has a graph:
 </build-note>
 
 <script>
-  spacey = {
-    schema: parseToGraph('spacey', spaceySchema.textContent),
-    graph: Atlas.graphData('spacey')
+  agitprop = {
+    schema: parseToGraph('agitprop', agitpropSchema.textContent),
+    graph: Atlas.graphData('agitprop')
   }
-  When(buildInRange(introSpaceyGraph, introSpaceyRunQuery))
-    .start(() => Graph.graphData(spacey.graph).clearHighlights().recenter())
+  When(buildInRange(introAgitpropGraph, introAgitpropRunQuery))
+    .start(() =>
+      Graph.graphData(agitprop.graph).clearHighlights().recenter())
 
-  When(buildInRange(introSpaceyGraphOrbit, introSpaceyRunQuery))
+  When(buildInRange(introAgitpropGraphOrbit, introAgitpropRunQuery))
     .withDuration(3[sec])
     .at(orbit())
 
-  When(introSpaceyRunQuery)
+  When(introAgitpropRunQuery)
     .start(() => {
-      graphql(spacey.schema, spaceyQuery.innerText)
+      graphql(agitprop.schema, agitpropQuery.innerText)
+        .then(console.log, console.error)
     }).end(() => Graph.clearHighlights())
 </script>
 
-<build-note id=introBookishGraph>
-  there's a subtle connection to our space graph here:
+<build-note id=introObscuraGraph>
+  this one's more of a tetrahedron
 </build-note>
-<build-note id=introBookishGraphOrbit>
-  specifically, we can look up the books for a particular astronaut's ID.  
+
+<build-note id=introObscuraOrbit>
+  it's interesting to me how the layout engine here forms stereotypical shapes based on the structure of the schema. in graphql, a lot of our relationships tend to be bidirectional—ratings have a film, a film has ratings—and you can see how many such relationships there are by counting the cycles
+</build-note>
+
+<pre id=obscuraSchema>
+<code class=graphql>
+# obscura.gql
+
+type Query {
+  screenings(before: Date, after: Date):
+    [Screening]
+  films(title: String, year: Int): [Film]
+  member(email: String): Member
+}
+
+type Film {      
+  title: String
+  year: Int
+  ratings(name: String): [Rating]
+}
+
+type Screening {
+  films: [Film]
+  date: Date
+  ratings: [Rating]
+}
+
+type Member {
+  email: String
+  name: String
+  ratings(title: String, year: Int): [Rating]
+}
+
+type Rating {
+  film: Film
+  member: Member
+  stars: Int
+  screening: Screening
+}
+
+scalar Date
+</code>
+</pre>
+
+<build-note id=introObscuraSchema>
+  this is the schema. a bit more complex. film folks, y'know?
+
+  this graph isn't connected to our other graph
 </build-note>
 
 <script>  
-  bookish = {
-    schema: parseToGraph('bookish', bookishSchema.textContent),    
-    graph: Atlas.graphData('bookish')
+  obscura = {
+    schema: parseToGraph('obscura', obscuraSchema.textContent),    
+    graph: Atlas.graphData('obscura')
   }
 
-  When(buildInRange(introBookishSchema, introBookishGraphOrbit))
+  When(buildInRange(introObscuraGraph, introObscuraSchema))
     .start(() => {
-      Graph.graphData(bookish.graph).recenter()
+      Graph.graphData(obscura.graph).recenter()
         .clearHighlights()
     })
 
-  When(introBookishGraphOrbit)
+  When(buildInRange(introObscuraOrbit, introObscuraSchema))
     .withDuration(3[sec])
     .at(orbit())
 </script>
 
 <build-note id=introBothGraph>
-  but that's not really represented in the graph itself.
+  but we can still think of them as existing in the same space  
 </build-note>
 
 <build-note id=introBothGraphOrbit>
-  the two graphs are disconnected. so if we want to do a query across them, we have to do that query separately, and manually
+  they just don't have any cross-links—they're disconnected.
+
+  but they both key their users on email—this is because i cheated—so we can, kindof, do a query across them. but since they're disconnected, we have join the data manually.
 </build-note>
 
-<pre id=spaceManualQuery>
-  <code class=graphql>
-    query GetAstronautId($name: String!) {
-      astronaut(byName: $name) { id }
-    }
+<build-note id=introManualQueryAgitprop>
+  to get all the readings i've taken notes on, i query agitprop
+</build-note>
 
-    # variables: { name: "sally" }
-  </code>
+<pre id=agitpropManualQuery>
+<code class=graphql>
+query {
+  user(email: "i@ashi.io") {
+    notes { reading { title } }
+  }
+}
+</code>
 </pre>
 
-<pre id=bookishManualQuery>
-  <code class=graphql>
-    query GetAstronautTitles($id: ID!) {
-      books(forAstronaut: $id) {
-        title
-        author { name }
-      }
+<build-note id=introRunManualQueryAgitprop></build-note>
+
+<build-note id=introManualQueryObscura>
+  to get my film ratings, i query obscura
+</build-note>
+
+<pre id=obscuraManualQuery>
+<code class=graphql>
+query {
+  member(email: "i@ashi.io") {
+    ratings {
+      film { title } stars
     }
-  </code>
+  }
+}
+</code>
 </pre>
 
-<build-note id=introManualQuerySpacey>
-  first, we query spacey to get the id of an astronaut we're interested in
-</build-note>
-<build-note id=introRunManualQuerySpacey></build-note>
-<build-note id=introManualQueryBookish>
-  then we have to shuttle that data over to bookish ourselves to query for the astronaut's titles
-</build-note>
-<build-note id=introRunManualQueryBookish>
-  this gets us the data we need, but it's not exactly ideal. it breaks the graphql promise of making one query to feed your frontend
+<build-note id=introRunManualQueryObscura>
+  then we glue them together in the frontend
 
-  federation solves this.
+  that works, but it's not exactly ideal. it breaks the graphql promise of making one query to feed your frontend
+
+  naturally, federation solves this.
 </build-note>
 
 <script>
-  When(introRunManualQuerySpacey)
+  When(introRunManualQueryAgitprop)
     .start(() => {
       Graph.clearHighlights()
-      graphql(spacey.schema, spaceManualQuery.textContent,
-        {},
-        {},
-        { name: "sally" })
+      graphql(agitprop.schema, agitpropManualQuery.textContent)
+        .then(console.error)
     })
 
-  When(introRunManualQueryBookish)
+  When(introRunManualQueryObscura)
     .start(() => {
       Graph.zoomToFit(300)
-      graphql(bookish.schema, bookishManualQuery.textContent,
+      graphql(obscura.schema, obscuraManualQuery.textContent,
         {},
         {},
         { id: 0 })
@@ -249,131 +296,100 @@ first, let's look at the state of graphql and federation today.
 </script>
 
 <build-note id=introFed>
-  to link these two graphs with federation, we don't need to change our spacey schema at all
+  to link these two graphs with federation, we don't actually have to change our schemas. these schemas don't know about each other, so we should be able to just join them into a new graph:
 </build-note>
 
-<build-note id=introFedBookish>
-  but we do need to make a few changes to our bookish schema. these changes teach the federation gateway how to build *another* graph
-</build-note>
-
-<pre id=bookishFedSchema>
-  <code class=graphql>
-    extend type Query {
-      books(forAstronaut: ID!): [Book]
-    }
-
-    extend type Astronaut @key(fields: "id") {
-      id: ID! @external
-      books: [Book]
-    }
-    
-    type Book {
-      title: String
-      author: Author
-      themes: [String!]
-    }
-    
-    type Author {
-      name: String
-      books: [Book!]
-    }
-  </code>
-</pre>
-
-<build-note id=introFedEarthseed>
+<build-note id=introFedUnified>
   the federated graph
 </build-note>
 
-<build-note id=introFedEarthseedOrbit>
-  the federated graph joins our other two graphs. you can think of it as a projection of both of them. a pretty faithful one—it contains all the types and fields from all our services, with the same types, names, arguments, and so on.
+<build-note id=introFedUnifiedOrbit>
+  the federated graph joins our other two graphs. you can think of it as a projection of both of them. and it's quite a faithful one—it contains all the types and fields from all our services, with the same types, names, arguments, and so on. you can see that it even more or less has the same shape
 
-  it also knows where those types and fields are *from* and, thanks to keys, how to get from one graph to another.
+  it also has links to the source graphs. it knows where all these types and fields are *from* and how to get from one graph to another.
 </build-note>
 
-<build-note id=introFedEarthseedQuery>
+<build-note id=introFedUnifiedQuery>
   now we can express our request as a single query against the federated graph
 </build-note>
 
-<build-note id=introFedEarthseedRunQuery>
+<build-note id=introFedUnifiedRunQuery>
   and when we run the query the gateway knows what queries to issue against its subgraphs to resolve the data we asked for.
 
-  that's federation as it stands today. federation is already incredibly powerful. it lets you fold multiple graphs into one—it's effectively giving us the "reduce" part of "map/reduce", but for the structure of our data itself. as with mapreduce, this lets you parallelize work—only in this case, the work is *growing the graph*. with federation, you can have multiple teams each working on growing the graph—it grows in parallel.
+  that's federation as it stands today. federation is already incredibly powerful, and teams are already using it 
+
+  it lets you fold multiple graphs into one—it's effectively giving us the "reduce" part of "map/reduce", but for the structure of our data itself. as with mapreduce, this lets you parallelize work—only in this case, the work is *growing the graph*. with federation, you can have multiple teams each working on growing the graph—it grows in parallel.
+
+  - ref jesse's talk (why you should federate)
 
   which means, your graph can explode.
 </build-note>
 
-<pre id=earthseedQuery>
-  <code class=graphql>
-    query {
-      astronaut(byName: "sally") {
-        books {
-          title
-          author { name }
-        }
-      }
+<pre id=unifiedQuery>
+<code class=graphql>
+query {
+  user(email: "i@ashi.io") {
+    notes { reading { title } }
+  }      
+  member(email: "i@ashi.io") {
+    ratings {
+      film { title } stars
     }
-  </code>
+  }
+}
+</code>
 </pre>
 
 <script>
-  spaceyAndBookish = Atlas.graphData('spacey', 'bookish')
+  agitpropAndObscura = Atlas.graphData('agitprop', 'obscura')
 
   When(buildInRange(introBothGraph, introFed))
-    .start(() => Graph.graphData(spaceyAndBookish).recenter().clearHighlights())
+    .start(() => Graph.graphData(agitpropAndObscura).recenter().clearHighlights())
 
   When(buildInRange(introBothGraphOrbit, introFed))
     .withDuration(3[sec])
     .at(orbit())
 
-  // parseToGraph(fedAtlas, 'bookish', bookishFedSchema.textContent)
-  // parseToGraph(fedAtlas, 'spacey', spaceySchema.textContent)
-
-  When(introFedBookish)
-    .start(() => Graph.recenter().clearHighlights())
-    
-  fedSpaceyBookish = composeServices([
+  fedAgitpropObscura = composeServices([
     {
-      name: 'spacey',
-      typeDefs: gql.call(null, [spaceySchema.textContent]),      
+      name: 'agitprop',
+      typeDefs: gql.call(null, [
+        agitpropSchema.textContent
+          .replace('type Query', 'extend type Query')
+      ]),
     },
     {
-      name: 'bookish',
-      typeDefs: gql.call(null, [bookishFedSchema.textContent]),
+      name: 'obscura',
+      typeDefs: gql.call(null, [
+        obscuraSchema.textContent
+          .replace('type Query', 'extend type Query')]),
     }
   ])
   
-  earthseed = {
-    schema: parseToGraph('earthseed', fedSpaceyBookish.schema),
+  unified = {
+    schema: parseToGraph('unified', fedAgitpropObscura.schema),
     graph: Atlas.graphData()
   }
   
-  // spaceyBookishEarthseed = {
-  //   nodes: [...spacey.nodes, ...bookish.nodes, ...earthseed.nodes],
-  //   links: [...spacey.links, ...bookish.links, ...earthseed.links],
-  // }
-  
-  When(buildInRange(introFedEarthseed, introFedEarthseedRunQuery))
+  When(buildInRange(introFedUnified, introFedUnifiedRunQuery))
     .start(() => {
-      Graph.graphData(earthseed.graph).recenter().clearHighlights()
+      Graph.graphData(unified.graph).recenter().clearHighlights()
     })
 
-  When(introFedEarthseedRunQuery)
+  When(introFedUnifiedRunQuery)
     .start(async () => {
-      await graphql(earthseed.schema, spaceManualQuery.textContent,
-        {},
-        {},
-        { name: "sally" })
-      graphql(earthseed.schema, earthseedQuery.textContent)
+      graphql(agitprop.schema, agitpropManualQuery.textContent)
+      graphql(obscura.schema, obscuraManualQuery.textContent)
+      graphql(unified.schema, unifiedQuery.textContent)
     })
 
-  When(buildInRange(introFedEarthseedOrbit, introFedEarthseedRunQuery))
+  When(buildInRange(introFedUnifiedOrbit, introFedUnifiedRunQuery))
     .withDuration(3[sec])
     .at(orbit())
 </script>
 
-
 <build-note id=csExplode>
-  this is amazing, but it can also be a lot! the amount of accessible data in your organization and frankly in the world is enough to make anyone's brain start dropping frames just like my computer.
+  this is powerful, but it can also be a lot! the amount of accessible data in your organization and frankly in the world is enough to make anyone's brain start dropping frames just like my computer.
   
   massive graphs create new, massive problems. you still have one graph to reason about, but now it's made of tens or hundreds of subgraphs, each likely maintained by a separate team. you have to make sure they fit together, make sure nobody steps on anyone else's toes.
   
@@ -446,19 +462,19 @@ first, let's look at the state of graphql and federation today.
 </build-note>
 
 <build-note id=csMoreFlexible>
-  we want to bring back a lot of the flexibility
+  for starters, we want to bring back a lot of the customizability
 </build-note>
 
 <build-note id=csStitching>
-  of schema stitching
+  of schema stitching. also, everything in constellation
 </build-note>
 
-<build-note id=csProject>
-  giving you more options for how to project large graphs.
+<build-note id=csStream>
+  ...is being built with to stream. we're taking this opportunity, while we're re-writing the query planner and ultimately the gateway, to build all these systems with subscriptions, live, and deferred queries in mind.
 </build-note>
 
 <build-note id=csCompatibility>
-  flexibility also means compatibility.
+  finally, flexibility also means compatibility.
 
   this was an important design criteria: we absolutely did not want to introduce any mandatory changes on the client side. all the new shiny features we're about to talk about will work with existing graphql clients.
 
@@ -467,6 +483,10 @@ first, let's look at the state of graphql and federation today.
 
 <build-note id=csEnd>
   let's see how.
+</build-note>
+
+<build-note id=feat>
+  let's go back and look at that federated query. this gets us all the data we want, but the shape is weird. we're getting back user.notes and member.ratings, and i'm sure we can reshape it in the frontend, but the whole point of all of this is that we shouldn't have to do that. our graph should be shaped how we want it.
 </build-note>
 
 <script>
@@ -491,7 +511,7 @@ first, let's look at the state of graphql and federation today.
     csInsight: ' 👁',
     csMoreFlexible: '\n    — more flexible',
     csStitching: '\t\t🧵',
-    csProject: ' 📽',
+    csStream: ' 🐟',
     csCompatibility: ' 🔌',
   }
 
@@ -514,82 +534,288 @@ first, let's look at the state of graphql and federation today.
     })
 </script>
 
-<build-note id=featBooks>
-  let's go back and look at our books schema. to federate this service, we had to define a key on `Astronaut` and implement `__entities`. this teaches the federation gateway how to enter the bookish service with an external type—namely, Astronaut.
-
-  something that's a little frustrating about this is that we actually already have all the information we need to resolve Astronaut.books. There's a `books(forAstronaut ID)` right there in our Query type. probably, we're calling the same underlying function in our Astronaut.books resolver. but there's no way to teach graphql about that. there's just no way to say, "in order to resolve this field, use data from this other field".
-
-  this is highly related to one of the most common questions I get asked: "how do I call into a resolver from another resolver?" and the answers we have today are pretty unsatisfying. basically: do it yourself. you can get a handle on the schema, and then call `execute` on it with your query. of course that doesn't really work in a federated context. the schema you have access to is the schema for whatever service you're in. if you want to make a federated query, you have to basically call up the gateway as though you're a client. that also means that any sub-queries that happen like this aren't included in query planning, so if this is something you end up doing a lot, you'll end up waterfalling—not great.
-
-  anyway, turns out we can fix it.
+<build-note id=featOldSchemas>
+  the problem is we didn't modify our underlying services
 </build-note>
 
-<pre id=bookishFromSchema>
-  <code class=graphql>
-    extend type Query {
-      books(forAstronaut: ID!): [Book]
-    }
+<build-note id=featOldSchemasHighlight>
+  so we still have separate user and member types, which means we have to query them in independent query branches.
+</build-note>
 
-    extend type Astronaut {
-      id: ID! @external
-      books: [Book] @from(query: "books(forAstronaut: id)")
-    }
-    
-    type Book {
-      title: String
-      author: Author
-      themes: [String!]
-    }
-    
-    type Author {
-      name: String
-      books: [Book!]
-    }
-  </code>
+<pre id=agitpropFedSchema>
+<code class=graphql>
+# agitprop-federated.gql
+
+extend type Query {
+  readings(title: String, author: String): [Reading!]!
+  user(email: String): User
+}
+
+type User @key(fields: "email") {
+  email: String
+  displayName: String
+  notes(title: String, author: String): [Note]
+}
+
+type Note {
+  user: User
+  reading: Reading
+  position: Int
+  text: String
+  date: Date
+}
+
+type Reading {
+  title: String
+  author: String
+  notes(email: String): [Note]
+}
+
+scalar Date
+</code>
+</pre>
+  
+<pre id=obscuraFedSchema>
+<code class=graphql>
+# obscura-federated.gql
+
+extend type Query {
+  screenings(before: Date, after: Date):
+    [Screening]
+  films(title: String, year: Int): [Film]
+  member(email: String): User
+}
+
+type Film {      
+  title: String
+  year: Int
+  ratings(name: String): [Rating]
+}
+
+type Screening {
+  films: [Film]
+  date: Date
+  ratings: [Rating]
+}
+
+extend type User @key(fields: "email") {
+  email: String @external
+  name: String
+  ratings(title: String, year: Int): [Rating]
+}
+
+type Rating {
+  film: Film
+  member: User
+  stars: Int
+  screening: Screening
+}
+
+scalar Date
+</code>
+</pre>      
+
+<build-note id=featFedSchemas>
+  to federate this service properly, we would probably merge the types into a single User type, defining email as a key. this would let us query everything together.
+
+  but it's still not ideal.
+  
+  thing one: we've arbitrarily decided that agitprop should "own" the User type, and obscura should extend it. we could have decided it the other way, it doesn't matter. ideally, we'd like to avoid having to make decisions that don't matter, especially around a concept with emotional charge like "ownership".
+  
+  this change also means that obscura's `Query.member` now returns type User, which is... interesting. we could change it, but that means going through a whole breaking changes dance: adding new fields, @deprecating the old ones, and then, once the old fields aren't queried anymore, removing them. frankly, it doesn't really seem worth it.
+
+  we had to change our services, adding `__entities` resolvers in the obscura service. those resolvers will basically do the same thing as resolvers we already have, so it's a bit frustrating that we have to define them at all.
+  
+  this example is synthetic, but these are not uncommon problems! this is basically what you run into whenever you're trying to link two graphs which have grown independently—they're going to have some overlap, so the unified schema will have some... odor to it. under federation today, fixing that odor requires changing the existing services.
+
+  but constellation is going to give us some tools to improve the situation.
+
+  before we dive in, i want to bracket this: nothing we're about to see is set in stone. everything is a draft! this is the direction we're thinking of going, and its shape is almost certainly going to change by the time we get there. so if you have thoughts, good or bad, please share them with us along the way!
+
+  the first thing i want to share is a new argument to `@key`:
+</build-note>
+
+<pre id=agitpropViaSchema>
+<code class=graphql>
+# agitprop-federated.gql
+
+extend type Query {
+  readings(title: String, author: String): [Reading!]!
+  user(email: String): User
+}
+
+type User
+  @key(fields: "email", via: "user(email: email)")
+{
+  email: String
+  displayName: String
+  notes(title: String, author: String): [Note]
+}
+
+type Note {
+  user: User
+  reading: Reading
+  position: Int
+  text: String
+  date: Date
+}
+
+type Reading {
+  title: String
+  author: String
+  notes(email: String): [Note]
+}
+
+scalar Date
+</code>
+</pre>
+  
+<pre id=obscuraViaSchema>
+<code class=graphql>
+# obscura-federated.gql
+
+extend type Query {
+  screenings(before: Date, after: Date):
+    [Screening]
+  films(title: String, year: Int): [Film]
+  member(email: String): User
+}
+
+type Film {      
+  title: String
+  year: Int
+  ratings(name: String): [Rating]
+}
+
+type Screening {
+  films: [Film]
+  date: Date
+  ratings: [Rating]
+}
+
+extend type User
+  @key(fields: "email", via: "member(email: email)")
+{
+  email: String @external
+  name: String
+  ratings(title: String, year: Int): [Rating]
+}
+
+type Rating {
+  film: Film
+  member: User
+  stars: Int
+  screening: Screening
+}
+
+scalar Date
+</code>
+</pre>      
+
+<build-note id=featVia>
+  via.
+
+  this argument tells the gateway what query to run to resolve an entity from this key. the query planner is smart about the types here—if the field takes an array of keys and returns an array of users, it'll call it with a batch of entities. if it doesn't, it'll generate multiple query branches.
+
+  so now we don't have to write `__entities`. we still *can*, resolving via __entities is still the default, but we don't have to. which means we don't need to make any code changes to our services.
+
+  ah, except we did change the names of the Member type to User. drat.
+
+  to address that, we're going to do something new: we're going to write a schema for *the federated service itself*
+
+  this makes some sense, right? a federated graph is, after all, a *whole new graph*. so we should be able to write a schema for it. in federation today, that schema is generated purely by composing our subgraph schemas. constellation gives us more control.
+</build-note>
+
+<pre id=unifiedSchema>
+<code class=graphql>
+# unified.gql
+
+schema
+  @include(schema: "agitprop")
+  @include(schema: "obscura {
+    Query
+    User: Member
+    Film
+    Screening
+    Rating
+  }") {}
+
+extend type User
+  @key(graph: "agitprop", fields: "email", via: "user(email)")
+  @key(graph: "obscura", fields: "email", via: "member(email)")
+</code>
 </pre>
 
-<build-note id=featBooksFrom>
-oooh. what we've done here is introduce a new directive—the @from directive, which says, "in order to resolve this field, run this other query."
+<build-note id=featUnifiedSchema>
+  this is just graphql! we've introduced a new directive, @include, which includes other schemas into this one.
 
-if you look carefully, you'll notice that this isn't actually a full query—we couldn't execute it from a client, because it doesn't select any fields. but here, that's okay! this query isn't going to get run directly. instead, it provides input to the query planner. when the gateway receives an end-user query which traverses Astronaut.books, it will insert this partial query into the query plan, and along with whatever selection set the frontend is asking for.
+  the argument to include lets us specify what services to include. it *also*, quite relevantly here, gives us the power to rename types via familiar aliasing operators.
 
-another thing: we no longer need key, because our query explicitly references `id`. i did that to demonstrate that we don't need it, but there are still good reasons to define keys and entities. notably, entities are batch-resolved, so we might see better performance if we're working with large sets of astronauts.
+  then we can extend the joined user type with keys for each subgraph.
+
+  with this joined schema, we don't have to change the underlying services at all! instead, we're telling the compiler exactly how we want our graphs to be composed
+
+  but wait, there's more. right now, our graph is pretty spare.
+</build-note>
+
+<build-note id=featPositionButNoText>
+  in particular, the notes we can take on readings have a position, but no text, so the frontend has to go query the text from project gutenberg independently.
+  
+  we can fix this! if project gutenberg has a graphql api, we can add it to our service list and federate against it. as far as the gateway is concerned, it's just another service.
+  
+  and then, we can do this:
+</build-note>
+
+<pre id=unifiedGutenberg>
+<code class=graphql>
+# unified.gql
+
+schema
+  @include(schema: "agitprop")
+  @include(schema: "obscura {
+    Query
+    User: Member
+    Film
+    Screening
+    Rating
+  }") {}
+
+extend type User
+  @key(graph: "agitprop", fields: "email", via: "user(email)")
+  @key(graph: "obscura", fields: "email", via: "member(email)")
+
+extend type Reading {
+  author: Author @external
+  title: String @external
+  text: String
+    @from(query: "
+      gutenberg::search(
+        author: author.name,
+        title: title).nodes.0.text")
+}
+</code>
+</pre>
+
+<script>
+  When(buildInRange(feat, {order: Infinity}))
+    .start(() => Graph.graphData(agitpropAndObscura))
+  When(buildInRange(feat, {order: Infinity}))
+    .withDuration(3[sec]).at(orbit())
+</script>
+
+<build-note id=featUnifiedGutenberg>
+what we've done here is introduce a new directive—the @from directive, which says, "in order to resolve this field, run this other query." now we have the text of our readings!
+
+the query we specify has a couple of new pieces of syntax. this new query syntax isn't exposed to clients, but it's pretty important to have here, in the data layer.
+
+the new pieces are graph identifiers and dotted paths. here, the graph identifier tells us to query the gutenberg subgraph, which we've configured we need the dotted paths to dig into the search results and lift the text of the first one up so it can be its own string field. keeping with the spirit of graphql, dot paths here act like optional chains—if any step is nullable, the whole thing is nullable
 
 this turns out to be pretty powerful, especially when you start thinking about larger graphs.
 
-say project gutenberg has a graphql api. with constellation, we can federate our own graph with it—no reason we can't, right? we just need a url.
+there's a lot of power here, but the DX is a bit lacking. we're doing a lot of work inside string arguments to directives, which isn't super great. what if... what if we could write this instead?
 </build-note>
 
-<pre id=bookishGutenberg>
-  <code class=graphql>
-    extend type Query {
-      books(forAstronaut: ID!): [Book]
-    }
-
-    extend type Astronaut {
-      id: ID! @external
-      books: [Book] @from(query: "books(forAstronaut: id)")
-    }
-    
-    type Book {
-      title: String
-      author: Author
-      themes: [String!]
-      text: String
-        @from(query: "
-          gutenberg::search(
-            author: author.name,
-            title: title).nodes.0.text")
-    }
-    
-    type Author {
-      name: String
-      books: [Book!]
-    }
-  </code>
-</pre>
-
-<build-note id=featGutenberg>
+<!-- <build-note id=featGutenberg>
 doing that lets us add a `text` field to our books.
 
 there's a bit more going on here. we've introduced some new query syntax—that's fine, clients don't ever have to know about it, it's just for use in the schema.
@@ -677,20 +903,51 @@ for example, the query chain is a bit long, and it's actually clear how we can s
       books: [Book!]
     }
   </code>
+</pre> -->
+
+
+<pre id=unifiedStar>
+  <code class=graphql>
+# unified.star
+
+...agitprop
+...obscura {
+  Query
+  User: Member
+  Film
+  Screening
+  Rating
+}
+
+extend type User
+  @key(graph: "agitprop",
+    fields: "email", via: "user(email)")
+  @key(graph: "obscura",
+    fields: "email", via: "member(email)")
+
+extend type Reading {
+  author: Author @external
+  title: String @external
+  text = gutenberg::search(author: author.name, title)
+    .nodes.0.text
+}
+  </code>
 </pre>
 
-<build-note id=featGutenbergStar>
+<build-note id=featUnifiedStar>
   we call this a star schema. it's a proper superset of graphql.
 
   right now, you might be thinking, "oh, cool!" or you might be thinking: "ashi! you promised back compatibility! you can't go adding features to the language all willy-nilly"
 
-  ah, but this *is* back compatible. all of this compiles down to graphql. everything on the left is syntactic sugar for this:
+  ah, but this *is* back compatible. all of this compiles down to graphql. everything on the left is syntactic sugar for what we had earlier:
 </build-note>
 
-<build-note id=featGutenbergSugar>
+<build-note id=featUnifiedSugar>
   it's just a bit cleaner, a bit shorter.
 
   this is all possible because we're introducing a compile step. or rather, we're making the existing compile step—which happens in the gateway—more explicit, and more powerful.
+
+
 
   to be clear: we're not completely set on this syntax—though it does *feel* rather nice, doesn't it? part of why we're sharing this early work is to get some feedback.
 
@@ -700,46 +957,18 @@ for example, the query chain is a bit long, and it's actually clear how we can s
 </build-note>
 
 <build-note id=future>
+  - get into federation now
+  - be ready, support feedback
+  - "a partnership of all of us"
+  - apollo has been community driven from the beginning, we need to do this together
+  - adopt now today, so we can walk into the future together
+
   as the space of data that we're working with continues to grow in size and complexity, these are the kinds of tools we'll need to wrangle, project, and reshape those graphs.
 
   federation is the first step. and this? this is the next one.
 
   thank you.
 </build-note>
-
-<pre id=gutenbergStar>
-  <code class=graphql>
-    extend type Query {
-      books(forAstronaut: ID!): [Book]
-    }
-
-    extend type Astronaut {
-      id: ID! @external
-      books: [Book] = query::books(forAstronaut: id)
-    }
-    
-    type Book {
-      title: String
-      author: Author
-      themes: [String!]
-      gutenbergBooks = gutenberg::search(
-        author: author.name, title
-      )
-      text: String = gutenberg.text
-    }
-    
-    type Author {
-      name: String
-      books: [Book!]
-    }
-  </code>
-</pre>
-
-<script>
-  When(featBooks)
-    .start(() => {
-    })
-</script>
 
 
 <!-- Letterbox & Bug -->

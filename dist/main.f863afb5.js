@@ -444,9 +444,9 @@ const Graph = (0, _dForceGraph.default)({
 exports.Graph = Graph;
 Graph.renderer().setPixelRatio(window.devicePixelRatio);
 const graphColors = {
-  spacey: _colors.red,
-  bookish: _colors.blue,
-  earthseed: _colors.purple
+  agitprop: _colors.red,
+  obscura: _colors.blue,
+  unified: _colors.purple
 };
 
 function textObject(node) {
@@ -555,14 +555,19 @@ addBloom(Graph);
 const SLOW = 1;
 const Y = new THREE.Vector3(0, 1, 0);
 
-function orbit(graph = Graph, speed = SLOW, axis = Y) {
+function orbit(graph = Graph, point = {
+  x: 0,
+  y: 0,
+  z: 0
+}) {
   return t => {
     if (graph.isAutoZooming) return;
-    let angle = t * speed;
+    let angle = t * SLOW;
     let distance = graph.camera().position.length();
     graph.cameraPosition({
-      x: distance * Math.sin(angle),
-      z: distance * Math.cos(angle)
+      x: (point.x || 0) + distance * Math.sin(angle),
+      y: point.y || 0,
+      z: (point.z || 0) + distance * Math.cos(angle)
     });
   };
 }

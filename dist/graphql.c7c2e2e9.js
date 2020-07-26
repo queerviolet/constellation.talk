@@ -553,7 +553,7 @@ Object.assign(window, {
   gql: _graphqlTag.default,
   Atlas: _atlas.default
 });
-},{"./time":"18875b723781e8234312962ddf26dfa6","graphql":"fc2b84ebcce4fc3f74b077e7e519f5c0","./stage":"decff87b80d38dbe8c94f3b323cea37d","@apollo/federation":"f2d88deae6dcec15ab403c3429e659de","graphql-tag":"7fffb83f33b4934f82b0aefca7383e0b","./atlas":"7a21966e4667722b4ba7af33161093be"}],"fc2b84ebcce4fc3f74b077e7e519f5c0":[function(require,module,exports) {
+},{"./time":"18875b723781e8234312962ddf26dfa6","graphql":"fc2b84ebcce4fc3f74b077e7e519f5c0","./stage":"decff87b80d38dbe8c94f3b323cea37d","./atlas":"7a21966e4667722b4ba7af33161093be","@apollo/federation":"f2d88deae6dcec15ab403c3429e659de","graphql-tag":"7fffb83f33b4934f82b0aefca7383e0b"}],"fc2b84ebcce4fc3f74b077e7e519f5c0":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19911,7 +19911,309 @@ function findDeprecatedUsages(schema, ast) {
   return (0, _validate.validate)(schema, ast, [_NoDeprecatedCustomRule.NoDeprecatedCustomRule]);
 }
 
-},{"../validation/validate":"77c11776a8b75d605671b2989187913c","../validation/rules/custom/NoDeprecatedCustomRule":"554f1f72d42e63b2f9b50b68534b7e8c"}],"f2d88deae6dcec15ab403c3429e659de":[function(require,module,exports) {
+},{"../validation/validate":"77c11776a8b75d605671b2989187913c","../validation/rules/custom/NoDeprecatedCustomRule":"554f1f72d42e63b2f9b50b68534b7e8c"}],"7a21966e4667722b4ba7af33161093be":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = exports.Atlas = exports.Node = exports.Link = exports.Entity = void 0;
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+// Atlas: {
+//   [id: string]: {
+//     node?: any
+//     link?: any
+//     three?: THREE.Object3D
+//     sprite?: SpriteTextExt
+//   }
+// } = {}
+class Entity {
+  constructor(graph, id, label) {
+    this.graph = graph;
+    this.id = id;
+    this.label = label;
+  }
+
+}
+
+exports.Entity = Entity;
+
+class Link extends Entity {
+  static id(graph, source, target, rel) {
+    return `(${source})-[${rel}]->(${target})`;
+  }
+
+  constructor(graph, sourceId, targetId, rel = '') {
+    super(graph, Link.id(graph, sourceId, targetId, rel));
+    this.graph = graph;
+    this.sourceId = sourceId;
+    this.targetId = targetId;
+    this.rel = rel;
+    this.source = sourceId;
+    this.target = targetId;
+  }
+
+}
+
+exports.Link = Link;
+var Kind;
+
+(function (Kind) {
+  Kind[Kind["RootType"] = 0] = "RootType";
+  Kind[Kind["ObjectType"] = 1] = "ObjectType";
+  Kind[Kind["ExtType"] = 2] = "ExtType";
+  Kind[Kind["ScalarField"] = 3] = "ScalarField";
+  Kind[Kind["ObjectField"] = 4] = "ObjectField";
+})(Kind || (Kind = {}));
+
+const SCALAR_TYPES = {
+  ID: true,
+  String: true,
+  Int: true,
+  Float: true,
+  Date: true,
+  Boolean: true
+};
+
+function isScalar({
+  type
+}) {
+  return type in SCALAR_TYPES;
+}
+
+class Node extends Entity {
+  static forType({
+    graph,
+    owner,
+    type
+  }) {
+    return new Node(graph, this.id({
+      graph,
+      owner,
+      type
+    }), type in Node.ROOT_TYPES ? Kind.RootType : owner !== graph ? Kind.ExtType : Kind.ObjectType, this.labelForType({
+      graph,
+      owner,
+      type
+    }));
+  }
+
+  static forField(parent, field, args, returns) {
+    return new Node(parent.graph, this.id(parent, field), isScalar(returns) ? Kind.ScalarField : Kind.ObjectField, this.labelForField(field, args));
+  }
+
+  static id({
+    graph,
+    owner,
+    type
+  }, field) {
+    return `${graph}::${owner}.${type}${field ? '.' + field : ''}`;
+  }
+
+  static labelForType(type) {
+    const {
+      graph,
+      owner
+    } = type;
+    return type.type in Node.ROOT_TYPES || owner !== graph ? `${owner}::${type.type}` : type.type;
+  }
+
+  static labelForField(name, args) {
+    return args?.length ? `${name}(${args.join(', ')})` : name;
+  }
+
+  constructor(graph, id, kind, name) {
+    super(graph, id, name);
+
+    _defineProperty(this, "linksIn", new Set());
+
+    _defineProperty(this, "linksOut", new Set());
+
+    this.kind = kind;
+  }
+
+  get isType() {
+    return this.kind === Kind.RootType || this.kind === Kind.ObjectType || this.kind === Kind.ExtType;
+  }
+
+  get isField() {
+    return this.kind === Kind.ScalarField || this.kind === Kind.ObjectField;
+  }
+
+  get isRoot() {
+    return this.kind === Kind.RootType;
+  }
+
+}
+
+exports.Node = Node;
+
+_defineProperty(Node, "ROOT_TYPES", {
+  Query: true,
+  Mutation: true,
+  Subscription: true
+});
+
+class Atlas {
+  constructor() {
+    _defineProperty(this, "nodes", new Map());
+
+    _defineProperty(this, "links", new Map());
+
+    _defineProperty(this, "graphs", new Map());
+
+    _defineProperty(this, "deferredLinks", new Map());
+  }
+
+  type(type) {
+    const {
+      nodes
+    } = this;
+    const id = Node.id(type);
+    const existing = nodes.get(id);
+    if (existing) return existing;
+    const created = Node.forType(type);
+    this.addNode(created);
+    this.graph(type.graph).nodes.push(created);
+    return created;
+  }
+
+  field(parent, field, args, returns) {
+    const {
+      nodes
+    } = this;
+    const id = Node.id(parent, field);
+    const existing = nodes.get(id);
+    if (existing) return existing;
+    const created = Node.forField(parent, field, args, returns);
+    this.addNode(created);
+    this.graph(parent.graph).nodes.push(created);
+    const parentId = this.type(parent).id;
+    this.link(parent.graph, parentId, created.id, 'field');
+
+    if (!isScalar(returns)) {
+      const returnsId = this.type(returns).id;
+      this.link(parent.graph, created.id, returnsId, 'returns');
+    }
+
+    return created;
+  }
+
+  link(graph, source, target, rel = '') {
+    const id = Link.id(graph, source, target, rel);
+    const {
+      links
+    } = this;
+    const existing = links.get(id);
+    if (existing) return existing;
+    const created = new Link(graph, source, target, rel);
+    links.set(id, created);
+    this.graph(graph).links.push(created);
+    this.wireUp(created);
+    return created;
+  }
+
+  graph(graph) {
+    const {
+      graphs
+    } = this;
+    const existing = graphs.get(graph);
+    if (existing) return existing;
+    const created = {
+      nodes: [],
+      links: []
+    };
+    graphs.set(graph, created);
+    return created;
+  }
+
+  graphData(...ids) {
+    if (!ids.length) ids = [...this.graphs.keys()];
+    let data = {
+      nodes: [],
+      links: []
+    };
+
+    for (const graphId of ids) {
+      const graph = this.graph(graphId);
+      data.nodes = data.nodes.concat(graph.nodes);
+      data.links = data.links.concat(graph.links.filter(l => l.sourceNode && l.targetNode));
+    }
+
+    const nodeIds = new Set(data.nodes.map(n => n.id));
+    console.log('ids', ids, nodeIds);
+    data.links = data.links.filter(l => nodeIds.has(l.sourceId) && nodeIds.has(l.targetId));
+    return data;
+  }
+
+  wireUp(link) {
+    const {
+      links,
+      nodes
+    } = this;
+    const src = nodes.get(link.sourceId);
+    const dst = nodes.get(link.targetId);
+    if (!src) this.deferLink(link.sourceId, link);else {
+      link.sourceNode = src;
+      src.linksOut.add(link);
+    }
+    if (!dst) this.deferLink(link.targetId, link);else {
+      link.targetNode = dst;
+      dst.linksIn.add(link);
+    }
+  }
+
+  addNode(node) {
+    const {
+      id
+    } = node;
+    this.nodes.set(id, node);
+    const deferred = this.deferredLinks.get(id);
+
+    if (deferred) {
+      for (const link of deferred) {
+        if (link.sourceId === id) {
+          node.linksOut.add(link);
+          link.sourceNode = node;
+        }
+
+        if (link.targetId === id) {
+          node.linksIn.add(link);
+          link.targetNode = node;
+        }
+      }
+    }
+
+    this.deferredLinks.delete(id);
+  }
+
+  deferLink(nodeId, link) {
+    const {
+      deferredLinks
+    } = this;
+    const existing = deferredLinks.get(nodeId);
+
+    if (existing) {
+      existing.push(link);
+      return;
+    }
+
+    const created = [link];
+    deferredLinks.set(nodeId, created);
+  }
+
+}
+
+exports.Atlas = Atlas;
+const theAtlas = new Atlas();
+var _default = theAtlas;
+exports.default = _default;
+Object.assign(window, {
+  Atlas: theAtlas
+});
+},{}],"f2d88deae6dcec15ab403c3429e659de":[function(require,module,exports) {
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -36639,307 +36941,6 @@ var define;
   gql.disableExperimentalFragmentVariables = disableExperimentalFragmentVariables;
   module.exports = gql;
 }); //# sourceMappingURL=graphql-tag.umd.js.map
-},{"graphql/language/parser":"e6fbcf6fff57ae990887508a98ddbabb"}],"7a21966e4667722b4ba7af33161093be":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = exports.Atlas = exports.Node = exports.Link = exports.Entity = void 0;
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-// Atlas: {
-//   [id: string]: {
-//     node?: any
-//     link?: any
-//     three?: THREE.Object3D
-//     sprite?: SpriteTextExt
-//   }
-// } = {}
-class Entity {
-  constructor(graph, id, label) {
-    this.graph = graph;
-    this.id = id;
-    this.label = label;
-  }
-
-}
-
-exports.Entity = Entity;
-
-class Link extends Entity {
-  static id(graph, source, target, rel) {
-    return `(${source})-[${rel}]->(${target})`;
-  }
-
-  constructor(graph, sourceId, targetId, rel = '') {
-    super(graph, Link.id(graph, sourceId, targetId, rel));
-    this.graph = graph;
-    this.sourceId = sourceId;
-    this.targetId = targetId;
-    this.rel = rel;
-    this.source = sourceId;
-    this.target = targetId;
-  }
-
-}
-
-exports.Link = Link;
-var Kind;
-
-(function (Kind) {
-  Kind[Kind["RootType"] = 0] = "RootType";
-  Kind[Kind["ObjectType"] = 1] = "ObjectType";
-  Kind[Kind["ExtType"] = 2] = "ExtType";
-  Kind[Kind["ScalarField"] = 3] = "ScalarField";
-  Kind[Kind["ObjectField"] = 4] = "ObjectField";
-})(Kind || (Kind = {}));
-
-const SCALAR_TYPES = {
-  ID: true,
-  String: true,
-  Int: true,
-  Float: true,
-  Boolean: true
-};
-
-function isScalar({
-  type
-}) {
-  return type in SCALAR_TYPES;
-}
-
-class Node extends Entity {
-  static forType({
-    graph,
-    owner,
-    type
-  }) {
-    return new Node(graph, this.id({
-      graph,
-      owner,
-      type
-    }), type in Node.ROOT_TYPES ? Kind.RootType : owner !== graph ? Kind.ExtType : Kind.ObjectType, this.labelForType({
-      graph,
-      owner,
-      type
-    }));
-  }
-
-  static forField(parent, field, args, returns) {
-    return new Node(parent.graph, this.id(parent, field), isScalar(returns) ? Kind.ScalarField : Kind.ObjectField, this.labelForField(field, args));
-  }
-
-  static id({
-    graph,
-    owner,
-    type
-  }, field) {
-    return `${graph}::${owner}.${type}${field ? '.' + field : ''}`;
-  }
-
-  static labelForType(type) {
-    const {
-      graph,
-      owner
-    } = type;
-    return type.type in Node.ROOT_TYPES || owner !== graph ? `${owner}.${type.type}` : type.type;
-  }
-
-  static labelForField(name, args) {
-    return args?.length ? `${name}(${args.join(', ')})` : name;
-  }
-
-  constructor(graph, id, kind, name) {
-    super(graph, id, name);
-
-    _defineProperty(this, "linksIn", new Set());
-
-    _defineProperty(this, "linksOut", new Set());
-
-    this.kind = kind;
-  }
-
-  get isType() {
-    return this.kind === Kind.RootType || this.kind === Kind.ObjectType || this.kind === Kind.ExtType;
-  }
-
-  get isField() {
-    return this.kind === Kind.ScalarField || this.kind === Kind.ObjectField;
-  }
-
-  get isRoot() {
-    return this.kind === Kind.RootType;
-  }
-
-}
-
-exports.Node = Node;
-
-_defineProperty(Node, "ROOT_TYPES", {
-  Query: true,
-  Mutation: true,
-  Subscription: true
-});
-
-class Atlas {
-  constructor() {
-    _defineProperty(this, "nodes", new Map());
-
-    _defineProperty(this, "links", new Map());
-
-    _defineProperty(this, "graphs", new Map());
-
-    _defineProperty(this, "deferredLinks", new Map());
-  }
-
-  type(type) {
-    const {
-      nodes
-    } = this;
-    const id = Node.id(type);
-    const existing = nodes.get(id);
-    if (existing) return existing;
-    const created = Node.forType(type);
-    this.addNode(created);
-    this.graph(type.graph).nodes.push(created);
-    return created;
-  }
-
-  field(parent, field, args, returns) {
-    const {
-      nodes
-    } = this;
-    const id = Node.id(parent, field);
-    const existing = nodes.get(id);
-    if (existing) return existing;
-    const created = Node.forField(parent, field, args, returns);
-    this.addNode(created);
-    this.graph(parent.graph).nodes.push(created);
-    const parentId = this.type(parent).id;
-    this.link(parent.graph, parentId, created.id, 'field');
-
-    if (!isScalar(returns)) {
-      const returnsId = this.type(returns).id;
-      this.link(parent.graph, created.id, returnsId, 'returns');
-    }
-
-    return created;
-  }
-
-  link(graph, source, target, rel = '') {
-    const id = Link.id(graph, source, target, rel);
-    const {
-      links
-    } = this;
-    const existing = links.get(id);
-    if (existing) return existing;
-    const created = new Link(graph, source, target, rel);
-    links.set(id, created);
-    this.graph(graph).links.push(created);
-    this.wireUp(created);
-    return created;
-  }
-
-  graph(graph) {
-    const {
-      graphs
-    } = this;
-    const existing = graphs.get(graph);
-    if (existing) return existing;
-    const created = {
-      nodes: [],
-      links: []
-    };
-    graphs.set(graph, created);
-    return created;
-  }
-
-  graphData(...ids) {
-    if (!ids.length) ids = [...this.graphs.keys()];
-    let data = {
-      nodes: [],
-      links: []
-    };
-
-    for (const graphId of ids) {
-      const graph = this.graph(graphId);
-      data.nodes = data.nodes.concat(graph.nodes);
-      data.links = data.links.concat(graph.links.filter(l => l.sourceNode && l.targetNode));
-    }
-
-    const nodeIds = new Set(data.nodes.map(n => n.id));
-    console.log('ids', ids, nodeIds);
-    data.links = data.links.filter(l => nodeIds.has(l.sourceId) && nodeIds.has(l.targetId));
-    return data;
-  }
-
-  wireUp(link) {
-    const {
-      links,
-      nodes
-    } = this;
-    const src = nodes.get(link.sourceId);
-    const dst = nodes.get(link.targetId);
-    if (!src) this.deferLink(link.sourceId, link);else {
-      link.sourceNode = src;
-      src.linksOut.add(link);
-    }
-    if (!dst) this.deferLink(link.targetId, link);else {
-      link.targetNode = dst;
-      dst.linksIn.add(link);
-    }
-  }
-
-  addNode(node) {
-    const {
-      id
-    } = node;
-    this.nodes.set(id, node);
-    const deferred = this.deferredLinks.get(id);
-
-    if (deferred) {
-      for (const link of deferred) {
-        if (link.sourceId === id) {
-          node.linksOut.add(link);
-          link.sourceNode = node;
-        }
-
-        if (link.targetId === id) {
-          node.linksIn.add(link);
-          link.targetNode = node;
-        }
-      }
-    }
-
-    this.deferredLinks.delete(id);
-  }
-
-  deferLink(nodeId, link) {
-    const {
-      deferredLinks
-    } = this;
-    const existing = deferredLinks.get(nodeId);
-
-    if (existing) {
-      existing.push(link);
-      return;
-    }
-
-    const created = [link];
-    deferredLinks.set(nodeId, created);
-  }
-
-}
-
-exports.Atlas = Atlas;
-const theAtlas = new Atlas();
-var _default = theAtlas;
-exports.default = _default;
-Object.assign(window, {
-  Atlas: theAtlas
-});
-},{}]},{},["87875bebeb19c502b2a6f3da948bccfa","7d61b6886901b9f17777f64e3e00768e"], null)
+},{"graphql/language/parser":"e6fbcf6fff57ae990887508a98ddbabb"}]},{},["87875bebeb19c502b2a6f3da948bccfa","7d61b6886901b9f17777f64e3e00768e"], null)
 
 //# sourceMappingURL=graphql.c7c2e2e9.js.map

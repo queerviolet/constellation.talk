@@ -101,5 +101,23 @@ build-note {
 .showGraph #graph {
   filter: none;
 }
+.left {
+  position: fixed;
+  width: calc(8 * var(--su));
+  height: calc(9 * var(--su));
+  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  left: calc(var(--letterbox-left) + 1 * var(--su));
+  bottom: auto;
+  right: auto;
+}
+.right {
+  position: fixed;
+  width: calc(8 * var(--su));
+  height: calc(9 * var(--su));
+  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  left: calc(var(--letterbox-left) + 8 * var(--su));
+  bottom: auto;
+  right: auto;
+}
 
 /*# sourceMappingURL=base.3a141669.css.map */

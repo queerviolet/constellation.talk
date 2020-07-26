@@ -101,132 +101,135 @@ build-note {
 .showGraph #graph {
   filter: none;
 }
-#spaceySchema,
-#spaceyQuery,
-#spaceManualQuery,
-#earthseedQuery {
+.left {
   position: fixed;
   width: calc(8 * var(--su));
   height: calc(9 * var(--su));
-  top: calc(var(--letterbox-top) + 0 * var(--su));
-  left: calc(var(--letterbox-left) + 0 * var(--su));
+  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  left: calc(var(--letterbox-left) + 1 * var(--su));
   bottom: auto;
   right: auto;
-  transition: opacity 1000ms;
-  opacity: 0;
 }
-#bookishSchema,
-#bookishManualQuery,
-#bookishFedSchema {
+.right {
   position: fixed;
-  width: calc(6 * var(--su));
+  width: calc(8 * var(--su));
   height: calc(9 * var(--su));
-  top: calc(var(--letterbox-top) + 0 * var(--su));
-  left: calc(var(--letterbox-left) + 10 * var(--su));
+  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  left: calc(var(--letterbox-left) + 8 * var(--su));
+  bottom: auto;
+  right: auto;
+}
+#agitpropSchema,
+#agitpropQuery,
+#agitpropManualQuery,
+#spaceManualQuery,
+#unifiedQuery {
+  position: fixed;
+  width: calc(8 * var(--su));
+  height: calc(9 * var(--su));
+  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  left: calc(var(--letterbox-left) + 1 * var(--su));
   bottom: auto;
   right: auto;
   transition: opacity 1000ms;
   opacity: 0;
 }
-.title #whatsNext,
-.introCommonLanguage #whatsNext {
+#obscuraSchema,
+#obscuraManualQuery,
+#obscuraFedSchema {
+  position: fixed;
+  width: calc(8 * var(--su));
+  height: calc(9 * var(--su));
+  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  left: calc(var(--letterbox-left) + 8 * var(--su));
+  bottom: auto;
+  right: auto;
+  transition: opacity 1000ms;
+  opacity: 0;
+}
+.introTitle #whatsNext,
+.introClub #whatsNext {
   display: block;
   opacity: 1;
 }
-.introSpaceySchema #spaceySchema {
-  opacity: 1;
-}
-.introSpaceyGraph #spaceySchema,
-.introSpaceyGraphOrbit #spaceySchema {
-  opacity: 1;
-}
-.introSpaceyGraph #graph,
-.introSpaceyGraphOrbit #graph {
+.introAgitpropGraph #graph,
+.introAgitpropGraphOrbit #graph {
   filter: none;
 }
-.introSpaceyQuery #spaceyQuery,
-.introSpaceyRunQuery #spaceyQuery {
-  opacity: 1;
-}
-.introSpaceyQuery #graph,
-.introSpaceyRunQuery #graph {
+.introAgitpropSchema #graph {
   filter: none;
 }
-.introBookishSchema #bookishSchema {
+.introAgitpropSchema #agitpropSchema {
   opacity: 1;
 }
-.introBookishGraph #bookishSchema,
-.introBookishGraphOrbit #bookishSchema {
+.introAgitpropQuery #agitpropQuery,
+.introAgitpropRunQuery #agitpropQuery {
   opacity: 1;
 }
-.introBookishGraph #graph,
-.introBookishGraphOrbit #graph {
+.introAgitpropQuery #graph,
+.introAgitpropRunQuery #graph {
   filter: none;
 }
-.introBothGraph #spaceySchema,
-.introBothGraphOrbit #spaceySchema {
-  opacity: 1;
+.introObscuraGraph #graph,
+.introObscuraOrbit #graph {
+  filter: none;
 }
-.introBothGraph #bookishSchema,
-.introBothGraphOrbit #bookishSchema {
+.introObscuraSchema #graph {
+  filter: none;
+}
+.introObscuraSchema #obscuraSchema {
   opacity: 1;
 }
 .introBothGraph #graph,
 .introBothGraphOrbit #graph {
   filter: none;
 }
-.introManualQuerySpacey #spaceManualQuery,
-.introRunManualQuerySpacey #spaceManualQuery {
+.introManualQueryAgitprop #agitpropManualQuery,
+.introRunManualQueryAgitprop #agitpropManualQuery {
   opacity: 1;
 }
-.introManualQuerySpacey #graph,
-.introRunManualQuerySpacey #graph {
+.introManualQueryAgitprop #graph,
+.introRunManualQueryAgitprop #graph {
   filter: none;
 }
-.introManualQueryBookish #spaceManualQuery,
-.introRunManualQueryBookish #spaceManualQuery {
+.introManualQueryObscura #agitpropManualQuery,
+.introRunManualQueryObscura #agitpropManualQuery {
   opacity: 1;
 }
-.introManualQueryBookish #graph,
-.introRunManualQueryBookish #graph {
+.introManualQueryObscura #graph,
+.introRunManualQueryObscura #graph {
   filter: none;
 }
-.introManualQueryBookish #bookishManualQuery,
-.introRunManualQueryBookish #bookishManualQuery {
-  opacity: 1;
-}
-.introFed #spaceySchema {
-  opacity: 1;
-}
-.introFed #bookishSchema {
+.introManualQueryObscura #obscuraManualQuery,
+.introRunManualQueryObscura #obscuraManualQuery {
   opacity: 1;
 }
 .introFed #graph {
   filter: none;
 }
-.introFedBookish #spaceySchema,
-.introFedEarthseed #spaceySchema {
+.introFedObscura #agitpropSchema,
+.introFedUnified #agitpropSchema {
   opacity: 1;
 }
-.introFedBookish #bookishFedSchema,
-.introFedEarthseed #bookishFedSchema {
+.introFedObscura #obscuraFedSchema,
+.introFedUnified #obscuraFedSchema {
   opacity: 1;
 }
-.introFedBookish #graph,
-.introFedEarthseed #graph {
+.introFedObscura #graph,
+.introFedUnified #graph {
   filter: none;
 }
-.introFedEarthseedOrbit #graph {
+.introFedUnifiedOrbit #graph {
   filter: none;
 }
-.introFedEarthseedQuery #graph,
-.introFedEarthseedRunQuery #graph,
-.introFedEarthseedRunSubQueries #graph {
+.introFedUnifiedQuery #graph,
+.introFedUnifiedRunQuery #graph,
+.introFedUnifiedRunSubQueries #graph {
   filter: none;
 }
-.introFedEarthseedQuery #earthseedQuery,
-.introFedEarthseedRunQuery #earthseedQuery,
-.introFedEarthseedRunSubQueries #earthseedQuery {
+.introFedUnifiedQuery #unifiedQuery,
+.introFedUnifiedRunQuery #unifiedQuery,
+.introFedUnifiedRunSubQueries #unifiedQuery {
   opacity: 1;
 }
 
