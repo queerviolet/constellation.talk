@@ -594,6 +594,14 @@ Graph.d3Force('link').distance(link => link.rel === 'origin' ? 300 : 30); // Gra
 (0, _letterbox.applyLetterbox)([16, 9], box => {
   Graph.width(box.width);
   Graph.height(box.height);
+  const {
+    splode
+  } = window;
+
+  if (splode) {
+    splode.width(box.width);
+    splode.height(box.height);
+  }
 });
 const ztf = Graph.zoomToFit;
 Graph.isAutoZooming = 0;

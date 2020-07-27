@@ -3,15 +3,17 @@ html {
   --typewriter-cursor-blink-rate: 1.2s;
   overflow: hidden;
   height: 100%;
+  background: #000010;
 }
 body {
-  background: #030818;
+  background: #000010;
   font-family: Monaco;
   font-size: 26px;
   padding: 0;
   margin: 0;
   overflow: hidden;
   height: 100%;
+  cursor: crosshair;
 }
 :global(.vbox) {
   display: flex;
@@ -89,13 +91,13 @@ build-note {
 }
 #graph {
   position: fixed;
-  width: var(--letterbox-width);
-  height: var(--letterbox-height);
-  top: var(--letterbox-top);
-  left: var(--letterbox-left);
-  bottom: var(--letterbox-bottom);
-  right: var(--letterbox-right);
-  transition: filter 1s;
+  width: calc(16 * var(--su));
+  height: calc(9 * var(--su));
+  top: calc(var(--letterbox-top) + 0 * var(--su));
+  left: calc(var(--letterbox-left) + 0 * var(--su));
+  bottom: auto;
+  right: auto;
+  transition: filter 1s, transform 1s;
   filter: blur(20px);
 }
 .showGraph #graph {
@@ -105,7 +107,7 @@ build-note {
   position: fixed;
   width: calc(8 * var(--su));
   height: calc(9 * var(--su));
-  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  top: calc(var(--letterbox-top) + 0.25 * var(--su));
   left: calc(var(--letterbox-left) + 1 * var(--su));
   bottom: auto;
   right: auto;
@@ -114,7 +116,7 @@ build-note {
   position: fixed;
   width: calc(8 * var(--su));
   height: calc(9 * var(--su));
-  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  top: calc(var(--letterbox-top) + 0.25 * var(--su));
   left: calc(var(--letterbox-left) + 8 * var(--su));
   bottom: auto;
   right: auto;
@@ -222,7 +224,7 @@ build-note {
   position: fixed;
   width: calc(8 * var(--su));
   height: calc(9 * var(--su));
-  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  top: calc(var(--letterbox-top) + 0.25 * var(--su));
   left: calc(var(--letterbox-left) + 1 * var(--su));
   bottom: auto;
   right: auto;
@@ -235,7 +237,7 @@ build-note {
   position: fixed;
   width: calc(8 * var(--su));
   height: calc(9 * var(--su));
-  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  top: calc(var(--letterbox-top) + 0.25 * var(--su));
   left: calc(var(--letterbox-left) + 8 * var(--su));
   bottom: auto;
   right: auto;
@@ -385,7 +387,7 @@ build-note {
   position: fixed;
   width: calc(8 * var(--su));
   height: calc(9 * var(--su));
-  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  top: calc(var(--letterbox-top) + 0.25 * var(--su));
   left: calc(var(--letterbox-left) + 8 * var(--su));
   bottom: auto;
   right: auto;
@@ -399,11 +401,33 @@ build-note {
   position: fixed;
   width: calc(8 * var(--su));
   height: calc(9 * var(--su));
-  top: calc(var(--letterbox-top) + 0.5 * var(--su));
+  top: calc(var(--letterbox-top) + 0.25 * var(--su));
   left: calc(var(--letterbox-left) + 8 * var(--su));
   bottom: auto;
   right: auto;
   opacity: 0;
+}
+.thanks #explosion {
+  opacity: 1;
+  filter: none;
+}
+.thanks #text {
+  position: fixed;
+  width: calc(16 * var(--su));
+  height: calc(9 * var(--su));
+  top: calc(var(--letterbox-top) + 0 * var(--su));
+  left: calc(var(--letterbox-left) + 0 * var(--su));
+  bottom: auto;
+  right: auto;
+  display: flex;
+  opacity: 1;
+  justify-content: center;
+}
+.thanks #text > #writer {
+  font-size: calc(0.5 * var(--su));
+}
+.thanks #text > #writer:first-line {
+  font-size: calc(1 * var(--su));
 }
 
 /*# sourceMappingURL=feat.811d85be.css.map */

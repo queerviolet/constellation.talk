@@ -2,8 +2,6 @@
 <meta charset="utf-8"/>
 
 <title>The Future of Federation</title>
-<link rel=stylesheet href=base.less>
-<link rel=stylesheet href=panel.less>
 <link rel=stylesheet href=intro.less>
 <link rel=stylesheet href=constellation.less>
 <link rel=stylesheet href=feat.less>
@@ -30,7 +28,7 @@
 <script src=graphql.ts></script>
 
 <build-note id=introCold>
-hi, i'm ashi krishnan, i work at apollo,
+hi, i'm ashi krishnan, i'm an engineer at apollo
 </build-note>
 
 <build-note id=introTitle>
@@ -47,8 +45,8 @@ first, let's look at the state of graphql and federation today.
 
 <script>
   When(buildInRange(introTitle, introClub))
-    .start(() => whatsNextTxt.text = 'the future of federation')
-    .end(() => whatsNextTxt.text = '')
+    .start(() => writer.text = 'the future of federation\n\n\n\n\nashi krishnan — ashi@apollographql.com — @rakshesha')
+    .end(() => writer.text = '')
 </script>
 
 <pre id=agitpropSchema>
@@ -316,11 +314,9 @@ query {
 <build-note id=introFedUnifiedRunQuery>
   and when we run the query the gateway knows what queries to issue against its subgraphs to resolve the data we asked for.
 
-  that's federation as it stands today. federation is already incredibly powerful, and teams are already using it 
+  that's federation as it stands today. it's is already incredibly powerful. lots of organizations are already getting tremendous benefit from it. netflix has this huge federated graph, which surprised me until i thought about how much data they have. and every time we talk to them they're doing some new, cool thing with it because of federation. 
 
-  it lets you fold multiple graphs into one—it's effectively giving us the "reduce" part of "map/reduce", but for the structure of our data itself. as with mapreduce, this lets you parallelize work—only in this case, the work is *growing the graph*. with federation, you can have multiple teams each working on growing the graph—it grows in parallel.
-
-  - ref jesse's talk (why you should federate)
+  federation effectively gives us the "reduce" part of "map/reduce", but for the structure of our data itself. as with mapreduce, this lets you parallelize work—only in this case, the work is *growing the graph*. with federation, you can have multiple teams each working on growing the graph—it grows in parallel.
 
   which means, your graph can explode.
 </build-note>
@@ -400,20 +396,24 @@ query {
   what if we could have both? the verifiability of federation with the flexibility of schema stitching?
 </build-note>
 
-<script>
-  splode = addBloom(ForceGraph3D()(explosion))
-    .nodeRelSize(1)
-    .enableNavigationControls(false)
-    .showNavInfo(false)    
-</script>
-
-<div id=whatsNext>
-  <type-writer id=whatsNextTxt></type-writer>
+<div id=text>
+  <type-writer id=writer></type-writer>
 </div>
 
 <build-note id=csEarlier>
   earlier this year, we sat down and asked ourselves this question: what's next? how do build on federation? how do we develop tools to wrangle these increasingly massive graphs?
 </build-note>
+
+<script>
+  splode = addBloom(ForceGraph3D()(explosion))
+    .nodeRelSize(1)
+    .enableNavigationControls(false)
+    .showNavInfo(false)
+
+  When(buildInRange(csEarlier, { order: Infinity }))
+    .start(() => Graph.pauseAnimation())
+    .end(() => Graph.resumeAnimation())
+</script>
 
 <build-note id=csWhatsNext>
   we've called the result project constellation.
@@ -522,15 +522,15 @@ query {
 
   When(csFlexiblier)
     .start(() =>
-      whatsNextTxt.text = bullets.csInsight + '\n    — flexiblier')
+      writer.text = bullets.csInsight + '\n    — flexiblier')
 
   When(buildInRange(csWhatsNext, csEnd))
     .changed((_, current) => {
       if (!(current.id in bullets)) return
-      whatsNextTxt.text = bullets[current.id]
+      writer.text = bullets[current.id]
     })
     .end(() => {
-      whatsNextTxt.text = ''
+      writer.text = ''
     })
 </script>
 
@@ -731,8 +731,8 @@ scalar Date
 # unified.gql
 
 schema
-  @include(schema: "agitprop")
-  @include(schema: "obscura {
+  @include(graph: "agitprop")
+  @include(graph: "obscura {
     Query
     User: Member
     Film
@@ -749,13 +749,13 @@ extend type User
 <build-note id=featUnifiedSchema>
   this is just graphql! we've introduced a new directive, @include, which includes other schemas into this one.
 
-  the argument to include lets us specify what services to include. it *also*, quite relevantly here, gives us the power to rename types via familiar aliasing operators.
-
-  then we can extend the joined user type with keys for each subgraph.
+  the graph argument lets us specify what subgraphs to include. in its simplest form, it just takes the name of a subgraph—that's what we're doing with agitprop. but we can also use query-like syntax to select and in this case rename types from the schema, giving us control over what types are included and how.
+  
+  then we can extend the joined user type with keys for each subgraph. this part isn't really new, though we are using the new via argument.
 
   with this joined schema, we don't have to change the underlying services at all! instead, we're telling the compiler exactly how we want our graphs to be composed
 
-  but wait, there's more. right now, our graph is pretty spare.
+  we can still do more. right now, our graph is pretty spare.
 </build-note>
 
 <build-note id=featPositionButNoText>
@@ -771,8 +771,8 @@ extend type User
 # unified.gql
 
 schema
-  @include(schema: "agitprop")
-  @include(schema: "obscura {
+  @include(graph: "agitprop")
+  @include(graph: "obscura {
     Query
     User: Member
     Film
@@ -815,97 +815,6 @@ this turns out to be pretty powerful, especially when you start thinking about l
 there's a lot of power here, but the DX is a bit lacking. we're doing a lot of work inside string arguments to directives, which isn't super great. what if... what if we could write this instead?
 </build-note>
 
-<!-- <build-note id=featGutenberg>
-doing that lets us add a `text` field to our books.
-
-there's a bit more going on here. we've introduced some new query syntax—that's fine, clients don't ever have to know about it, it's just for use in the schema.
-
-i want to emphasize that we haven't entirely finalized this syntax
-
-the new pieces are graph identifiers and dotted paths. here, the graph identifier tells us to query the gutenberg subgraph. we need the dotted paths to dig into the search results and lift the text of the first one up so it can be its own string field. keeping with the spirit of graphql, dot paths here act like optional chains—if any step is nullable, the whole thing is nullable
-
-i think you can start to see how powerful this can be. but we're not quite done.
-we're aiming to make the developer experience rather nicer than this.
-
-for example, the query chain is a bit long, and it's actually clear how we can shorten it. if this were a programming language, we'd just use a variable, but we don't have those. maybe we can define a field?
-</build-note>
-
-<build-note id=featGutenbergWhat>
-  we don't know the type of this field. we could go and figure it out—it's some kind of connection—but this is another case where the compiler *already knows*, so maybe we could just ask it to fill something in?
-</build-note>
-
-<pre id=gutenbergFieldWhat>
-  <code class=graphql>
-    extend type Query {
-      books(forAstronaut: ID!): [Book]
-    }
-
-    extend type Astronaut {
-      id: ID! @external
-      books: [Book] @from(query: "books(forAstronaut: id)")
-    }
-    
-    type Book {
-      title: String
-      author: Author
-      themes: [String!]
-      gutenbergBooks: ??? # what goes here??
-        @from(query: "
-          gutenberg::search(
-            author: author.name,
-            title: title)
-        ")
-      text: String @from(field: "gutenbergBooks.nodes.0.text")
-    }
-    
-    type Author {
-      name: String
-      books: [Book!]
-    }
-  </code>
-</pre>
-
-
-<build-note id=featGutenbergInfer>
-  that's what __Infer does. __Infer will be erased when we compose this schema. the compiler will substitute in the acutal return type of the query.
-
-  i think you can see how this gets pretty powerful, pretty fast. but it's also getting increasingly hard to read. we're doing a lot of work inside strings within directives, which feels a bit off. and now there's underscores happening, which are always a little intimidating.
-  
-  what if... what if we could write this?
-</build-note>
-
-<pre id=gutenbergFieldInfer>
-  <code class=graphql>
-    extend type Query {
-      books(forAstronaut: ID!): [Book]
-    }
-
-    extend type Astronaut {
-      id: ID! @external
-      books: [Book] @from(query: "books(forAstronaut: id)")
-    }
-    
-    type Book {
-      title: String
-      author: Author
-      themes: [String!]
-      gutenbergBooks: __Infer
-        @from(query: "
-          gutenberg::search(
-            author: author.name,
-            title: title)
-        ")
-      text: String @from(field: "gutenbergBooks.nodes.0.text")
-    }
-    
-    type Author {
-      name: String
-      books: [Book!]
-    }
-  </code>
-</pre> -->
-
-
 <pre id=unifiedStar>
   <code class=graphql>
 # unified.star
@@ -926,8 +835,6 @@ extend type User
     fields: "email", via: "member(email)")
 
 extend type Reading {
-  author: Author @external
-  title: String @external
   text = gutenberg::search(author: author.name, title)
     .nodes.0.text
 }
@@ -935,19 +842,21 @@ extend type Reading {
 </pre>
 
 <build-note id=featUnifiedStar>
-  we call this a star schema. it's a proper superset of graphql.
+  we call this a star schema. this is a proper superset of graphql.
 
-  right now, you might be thinking, "oh, cool!" or you might be thinking: "ashi! you promised back compatibility! you can't go adding features to the language all willy-nilly"
+  instead of @include directives, we've introduced a *type spread* operator. this works a lot like the existing fragment spread operator, but instead of adding selections to a query, we're adding types into our schema. you'll also be able to use the syntax to spread the fields of one type into another.
 
-  ah, but this *is* back compatible. all of this compiles down to graphql. everything on the left is syntactic sugar for what we had earlier:
+  the other new piece of syntax on display here is the assignment operator. here, we're assigning the text field to a query. that query can use the extended query syntax we saw earlier to select the gutenberg graph, and dig out the text of the first search result.
+
+  right now, you might be thinking, "oh, cool!" or you might be thinking: "ashi! you promised back compatibility! you can't go adding features to the language all willy-nilly" maybe both! we contain multitudes!
+
+  thing is: we're not adding this to graphql. and this *is* back compatible. all this new syntax compiles down to graphql. everything on the left is syntactic sugar for what we had earlier:
 </build-note>
 
 <build-note id=featUnifiedSugar>
-  it's just a bit cleaner, a bit shorter.
+  it's just a bit cleaner, shorter, easier to write.
 
-  this is all possible because we're introducing a compile step. or rather, we're making the existing compile step—which happens in the gateway—more explicit, and more powerful.
-
-
+  this is all possible because we're introducing a compile step. or rather, we're making the existing compile step—which happens in the gateway—more explicit, and more powerful, and something you are able to run yourself, locally.
 
   to be clear: we're not completely set on this syntax—though it does *feel* rather nice, doesn't it? part of why we're sharing this early work is to get some feedback.
 
@@ -957,18 +866,27 @@ extend type Reading {
 </build-note>
 
 <build-note id=future>
-  - get into federation now
-  - be ready, support feedback
-  - "a partnership of all of us"
-  - apollo has been community driven from the beginning, we need to do this together
-  - adopt now today, so we can walk into the future together
-
   as the space of data that we're working with continues to grow in size and complexity, these are the kinds of tools we'll need to wrangle, project, and reshape those graphs.
 
-  federation is the first step. and this? this is the next one.
+  remember the semantic web? this idea that we'd create a substrate of machine-readable data on the web? and then it would be easy for everyone from hobbyists to partner organizations to navigate this massive space of information we're constantly creating and cataloguing? *this* is the semantic web. and this work is building a language for accessing and manipulating it. we're building new ways to find patterns in the sky.
 
+  like i said before, these are ~forward looking statements which may contain inaccuracies~. or: this is prophecy. which means it's squishy, because that is the nature of the future. which means, if you're excited by any of this, you can help shape it. the best way to start is to get into federation now, so you can be involved in this next phase of development.
+  
+  apollo has been community driven from the beginning. we don't want to do this alone. we can't really do this alone. we can write the tools, but will we write the right tools? we can build a future, but will it be a future for all of us? that's the question in... a lot of areas of society right now, and also here.
+
+  i'm excited by this work because... well, because i'm profoundly a nerd. but also because we're working to make the space of data—the graph of everything, this vast sea of everything known to computers—more intelligible. more accessible. we are creating tools which are easier to hold. we are opening possibilities. we are, hopefully, inviting more people into this world. and i think whatever the challenges, expanding the space of freedom is a fundamental good.
+
+  so come with us. we're headed to the stars.
+</build-note>
+
+<build-note id=thanks>
   thank you.
 </build-note>
+
+<script>
+  When(thanks)
+    .start(() => writer.text = "thanks!\n\n\n\nproject constellation: the future of federation\nashi krishnan — i@ashi.io — @rakshesha\n\nhttps://github.com/queerviolet/constellation.talk\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t~ xoxo, ashi")
+</script>
 
 
 <!-- Letterbox & Bug -->

@@ -3,15 +3,17 @@ html {
   --typewriter-cursor-blink-rate: 1.2s;
   overflow: hidden;
   height: 100%;
+  background: #000010;
 }
 body {
-  background: #030818;
+  background: #000010;
   font-family: Monaco;
   font-size: 26px;
   padding: 0;
   margin: 0;
   overflow: hidden;
   height: 100%;
+  cursor: crosshair;
 }
 :global(.vbox) {
   display: flex;

@@ -190,7 +190,15 @@ Graph.d3Force('charge')(-10)
 ;(Graph.d3Force('link') as any).distance((link: any) => link.rel === 'origin' ? 300 : 30)
 // Graph.d3Force('center')(5)
 
-applyLetterbox([16, 9], box => { Graph.width(box.width); Graph.height(box.height) });
+applyLetterbox([16, 9], box => {  
+  Graph.width(box.width)
+  Graph.height(box.height)
+  const {splode} = window as any
+  if (splode) {
+    splode.width(box.width)
+    splode.height(box.height)
+  }
+});
 
 const ztf = Graph.zoomToFit
 Graph.isAutoZooming = 0

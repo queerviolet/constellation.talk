@@ -108,27 +108,6 @@
   }
 }
 
-// .featGutenberg {
-//   .sky();
-//   #bookishGutenberg {
-//     opacity: 1;
-//   }
-// }
-
-// .featGutenbergWhat {
-//   .sky();
-//   #gutenbergFieldWhat {
-//     opacity: 1;
-//   }
-// }
-
-// .featGutenbergInfer {
-//   .sky();
-//   #gutenbergFieldInfer {
-//     opacity: 1;
-//   }
-// }
-
 .featUnifiedStar {
   .sky();
   #unifiedStar { opacity: 1; }
@@ -147,5 +126,22 @@
   #unifiedGutenberg {
     .right();
     opacity: 0;
+  }
+}
+
+.thanks {
+  #explosion { opacity: 1; filter: none; }
+  #text {
+    .stage();
+    display: flex;
+    opacity: 1;
+    justify-content: center;
+
+    > #writer {
+      font-size: calc(0.5 * var(--su));
+      &:first-line {
+        font-size: calc(1 * var(--su));
+      }
+    }
   }
 }

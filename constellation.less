@@ -10,13 +10,13 @@
   pointer-events: none;
 }
 
-#whatsNext {
+#text {
   .stage(0, 0, 16, 9);
   .fades();
 
   display: none;
 
-  > #whatsNextTxt {
+  > #writer {
     .stage(1, 1, 15, 8);
     display: block;
     color: @yellow-base;
@@ -37,7 +37,7 @@
 
 .csExplode, .csEarlier {
   #explosion { filter: none; opacity: 1; }
-  #whatsNext { display: flex; }
+  #text { display: flex; }
 }
 
 .csWhatsNext,
@@ -57,9 +57,9 @@
 .csCompatibility
 {
   .csEarlier();
-  #whatsNext { display: flex; opacity: 1; }
+  #text { display: flex; opacity: 1; }
 }
 
 .csEnd {
-  #explosion { display: flex; opacity: 1; }
+  #text { display: flex; opacity: 1; }
 }

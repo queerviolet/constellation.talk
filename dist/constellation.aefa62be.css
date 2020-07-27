@@ -3,15 +3,17 @@ html {
   --typewriter-cursor-blink-rate: 1.2s;
   overflow: hidden;
   height: 100%;
+  background: #000010;
 }
 body {
-  background: #030818;
+  background: #000010;
   font-family: Monaco;
   font-size: 26px;
   padding: 0;
   margin: 0;
   overflow: hidden;
   height: 100%;
+  cursor: crosshair;
 }
 :global(.vbox) {
   display: flex;
@@ -89,17 +91,35 @@ build-note {
 }
 #graph {
   position: fixed;
-  width: var(--letterbox-width);
-  height: var(--letterbox-height);
-  top: var(--letterbox-top);
-  left: var(--letterbox-left);
-  bottom: var(--letterbox-bottom);
-  right: var(--letterbox-right);
-  transition: filter 1s;
+  width: calc(16 * var(--su));
+  height: calc(9 * var(--su));
+  top: calc(var(--letterbox-top) + 0 * var(--su));
+  left: calc(var(--letterbox-left) + 0 * var(--su));
+  bottom: auto;
+  right: auto;
+  transition: filter 1s, transform 1s;
   filter: blur(20px);
 }
 .showGraph #graph {
   filter: none;
+}
+.left {
+  position: fixed;
+  width: calc(8 * var(--su));
+  height: calc(9 * var(--su));
+  top: calc(var(--letterbox-top) + 0.25 * var(--su));
+  left: calc(var(--letterbox-left) + 1 * var(--su));
+  bottom: auto;
+  right: auto;
+}
+.right {
+  position: fixed;
+  width: calc(8 * var(--su));
+  height: calc(9 * var(--su));
+  top: calc(var(--letterbox-top) + 0.25 * var(--su));
+  left: calc(var(--letterbox-left) + 8 * var(--su));
+  bottom: auto;
+  right: auto;
 }
 #explosion {
   position: fixed;
@@ -114,7 +134,7 @@ build-note {
   opacity: 0;
   pointer-events: none;
 }
-#whatsNext {
+#text {
   position: fixed;
   width: calc(16 * var(--su));
   height: calc(9 * var(--su));
@@ -126,7 +146,7 @@ build-note {
   opacity: 0;
   display: none;
 }
-#whatsNext > #whatsNextTxt {
+#text > #writer {
   position: fixed;
   width: calc(15 * var(--su));
   height: calc(8 * var(--su));
@@ -143,7 +163,7 @@ build-note {
   text-shadow: calc(0.1 * var(--su)) calc(0.1 * var(--su)) calc(0.2 * var(--su)) black;
   white-space: pre;
 }
-#whatsNext > #whatsNextTxt:first-line {
+#text > #writer:first-line {
   font-size: calc(0.9 * var(--su));
 }
 .csExplode #explosion,
@@ -151,8 +171,8 @@ build-note {
   filter: none;
   opacity: 1;
 }
-.csExplode #whatsNext,
-.csEarlier #whatsNext {
+.csExplode #text,
+.csEarlier #text {
   display: flex;
 }
 .csWhatsNext #explosion,
@@ -173,42 +193,42 @@ build-note {
   filter: none;
   opacity: 1;
 }
-.csWhatsNext #whatsNext,
-.csEvolution #whatsNext,
-.csFaster #whatsNext,
-.csRust #whatsNext,
-.csParallelism #whatsNext,
-.csAheadOfTime #whatsNext,
-.csStronger #whatsNext,
-.csValidations #whatsNext,
-.csErrors #whatsNext,
-.csInsight #whatsNext,
-.csFlexiblier #whatsNext,
-.csMoreFlexible #whatsNext,
-.csStitching #whatsNext,
-.csStream #whatsNext,
-.csCompatibility #whatsNext {
+.csWhatsNext #text,
+.csEvolution #text,
+.csFaster #text,
+.csRust #text,
+.csParallelism #text,
+.csAheadOfTime #text,
+.csStronger #text,
+.csValidations #text,
+.csErrors #text,
+.csInsight #text,
+.csFlexiblier #text,
+.csMoreFlexible #text,
+.csStitching #text,
+.csStream #text,
+.csCompatibility #text {
   display: flex;
 }
-.csWhatsNext #whatsNext,
-.csEvolution #whatsNext,
-.csFaster #whatsNext,
-.csRust #whatsNext,
-.csParallelism #whatsNext,
-.csAheadOfTime #whatsNext,
-.csStronger #whatsNext,
-.csValidations #whatsNext,
-.csErrors #whatsNext,
-.csInsight #whatsNext,
-.csFlexiblier #whatsNext,
-.csMoreFlexible #whatsNext,
-.csStitching #whatsNext,
-.csStream #whatsNext,
-.csCompatibility #whatsNext {
+.csWhatsNext #text,
+.csEvolution #text,
+.csFaster #text,
+.csRust #text,
+.csParallelism #text,
+.csAheadOfTime #text,
+.csStronger #text,
+.csValidations #text,
+.csErrors #text,
+.csInsight #text,
+.csFlexiblier #text,
+.csMoreFlexible #text,
+.csStitching #text,
+.csStream #text,
+.csCompatibility #text {
   display: flex;
   opacity: 1;
 }
-.csEnd #explosion {
+.csEnd #text {
   display: flex;
   opacity: 1;
 }

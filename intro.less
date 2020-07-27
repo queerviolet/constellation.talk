@@ -14,9 +14,16 @@
 
 // -- builds --
 .introTitle, .introClub {
-  #whatsNext {
+  #text {
     display: block;
     opacity: 1;
+
+    > #writer {
+      font-size: calc(0.5 * var(--su));
+      &:first-line {
+        font-size: calc(1 * var(--su));
+      }
+    }
   }
 }
 
@@ -43,6 +50,7 @@
 .introObscuraSchema {
   .introObscuraGraph();
   #obscuraSchema { opacity: 1; }
+  #graph { transform: translateX(calc(-3 * var(--su))); }
 }
 
 .introBothGraph, .introBothGraphOrbit {
