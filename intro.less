@@ -35,12 +35,18 @@
 .introAgitpropSchema {
   .introAgitpropGraph();
   #agitpropSchema { opacity: 1; }
+  #graph {
+    transform: translateX(15%);
+  }
 }
 
 .introAgitpropQuery,
 .introAgitpropRunQuery {
   #agitpropQuery { opacity: 1; }
   .showGraph();
+  #graph {
+    transform: translateX(15%);
+  }
 }
 
 .introObscuraGraph, .introObscuraOrbit {
@@ -50,7 +56,7 @@
 .introObscuraSchema {
   .introObscuraGraph();
   #obscuraSchema { opacity: 1; }
-  #graph { transform: translateX(calc(-3 * var(--su))); }
+  #graph { transform: translateX(-22%); }
 }
 
 .introBothGraph, .introBothGraphOrbit {
@@ -73,13 +79,7 @@
   .introBothGraphOrbit();
 }
 
-.introFedObscura, .introFedUnified {
-  #agitpropSchema { opacity: 1; }
-  #obscuraFedSchema { opacity: 1; }
-  .showGraph();
-}
-
-.introFedUnifiedOrbit {
+.introFedUnified, .introFedUnifiedOrbit {
   .showGraph();
 }
 

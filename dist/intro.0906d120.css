@@ -172,6 +172,9 @@ build-note {
 .introAgitpropSchema #agitpropSchema {
   opacity: 1;
 }
+.introAgitpropSchema #graph {
+  transform: translateX(15%);
+}
 .introAgitpropQuery #agitpropQuery,
 .introAgitpropRunQuery #agitpropQuery {
   opacity: 1;
@@ -179,6 +182,10 @@ build-note {
 .introAgitpropQuery #graph,
 .introAgitpropRunQuery #graph {
   filter: none;
+}
+.introAgitpropQuery #graph,
+.introAgitpropRunQuery #graph {
+  transform: translateX(15%);
 }
 .introObscuraGraph #graph,
 .introObscuraOrbit #graph {
@@ -191,7 +198,7 @@ build-note {
   opacity: 1;
 }
 .introObscuraSchema #graph {
-  transform: translateX(calc(-3 * var(--su)));
+  transform: translateX(-22%);
 }
 .introBothGraph #graph,
 .introBothGraphOrbit #graph {
@@ -220,18 +227,7 @@ build-note {
 .introFed #graph {
   filter: none;
 }
-.introFedObscura #agitpropSchema,
-.introFedUnified #agitpropSchema {
-  opacity: 1;
-}
-.introFedObscura #obscuraFedSchema,
-.introFedUnified #obscuraFedSchema {
-  opacity: 1;
-}
-.introFedObscura #graph,
-.introFedUnified #graph {
-  filter: none;
-}
+.introFedUnified #graph,
 .introFedUnifiedOrbit #graph {
   filter: none;
 }
